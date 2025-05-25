@@ -1,3 +1,5 @@
+---
+# TODO: Change the detected changes to the whole pull request, not just the last commit
 name: Suggest Version Bump
 
 permissions:
@@ -50,3 +52,5 @@ jobs:
           for folder in ${{ steps.changed.outputs.folders }}; do
             echo "📌 Suggest bump for routes/$folder/: $BUMP"
           done
+
+...

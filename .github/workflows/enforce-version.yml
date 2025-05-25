@@ -1,3 +1,4 @@
+---
 name: Enforce Correct Version Update
 
 permissions:
@@ -51,3 +52,5 @@ jobs:
               echo "✅ routes/$v/__init__.py includes a version change."
             fi
           done
+
+...

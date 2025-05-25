@@ -1,3 +1,4 @@
+---
 name: Lint
 
 permissions:
@@ -28,3 +29,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VALIDATE_ALL_CODEBASE: false
           FILTER_REGEX_EXCLUDE: "(.devcontainer/Dockerfile|.github/pull_request_template.md|.github/ISSUE_TEMPLATE/*.md)"
+
+...
