@@ -55,3 +55,13 @@ jobs:
           for folder in ${{ steps.changed.outputs.folders }}; do
             echo "📌 Suggest bump for routes/$folder/: $BUMP"
           done
+
+      - name: Report in job summary
+        if: steps.changed.outputs.folders != ''
+        run: |
+          {
+            echo "### 🚀 Suggested Version Bumps"
+            for folder in ${{ steps.changed.outputs.folders }}; do
+              echo "- \`routes/$folder/\`: **${{ steps.bump.outputs.bump }}**"
+            done
+          } >> $GITHUB_STEP_SUMMARY
