@@ -1,0 +1,10 @@
+{
+    "name": "Template Development Container",
+    "dockerFile": "Dockerfile",
+    "customizations": {
+        "settings": {
+            "terminal.integrated.shell.linux": "/bin/bash"
+        }
+    },
+    "remoteUser": "vscode"
+}

@@ -1,0 +1,22 @@
+name: Scan Devcontainer Image
+
+permissions:
+  actions: read
+  security-events: write
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request: null
+
+jobs:
+  scan-devcontainer:
+    name: Scan Devcontainer Image
+
+    uses: <your-username>/<your-repo>/.github/workflows/docker-image-verification.yml@main
+    with:
+      image_name: devcontainer
+      dockerfile_path: ./Dockerfile
+      context: .devcontainer
