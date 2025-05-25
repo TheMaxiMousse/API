@@ -1,7 +1,11 @@
 name: Suggest Version Bump
 
+permissions:
+  contents: read
+  statuses: write
+
 on:
-  pull_request:
+  push:
     branches:
       - main
     types:
