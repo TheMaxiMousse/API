@@ -10,8 +10,7 @@ on:
       - main
     paths:
       - '**/*.py'
-    paths-ignore:
-      - '**/tests/**'
+      - '!**/tests/**'
 
 jobs:
   suggest-bump:
