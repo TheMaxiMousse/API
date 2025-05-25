@@ -20,5 +20,3 @@ jobs:
       image_name: devcontainer
       dockerfile_path: ./Dockerfile
       context: .devcontainer
-
-...

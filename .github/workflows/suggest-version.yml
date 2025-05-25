@@ -52,5 +52,3 @@ jobs:
           for folder in ${{ steps.changed.outputs.folders }}; do
             echo "📌 Suggest bump for routes/$folder/: $BUMP"
           done
-
-...
