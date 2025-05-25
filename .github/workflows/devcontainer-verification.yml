@@ -15,7 +15,7 @@ jobs:
   scan-devcontainer:
     name: Scan Devcontainer Image
 
-    uses: <your-username>/<your-repo>/.github/workflows/docker-image-verification.yml@main
+    uses: Vianpyro/Template/.github/workflows/docker-image-verification.yml@main
     with:
       image_name: devcontainer
       dockerfile_path: ./Dockerfile

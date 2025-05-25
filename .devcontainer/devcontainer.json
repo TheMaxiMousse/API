@@ -1,10 +1,20 @@
 {
-    "name": "Template Development Container",
+    "name": "ChocoMax API Development Container",
     "dockerFile": "Dockerfile",
     "customizations": {
         "settings": {
             "terminal.integrated.shell.linux": "/bin/bash"
+        },
+        "vscode": {
+            "extensions": [
+                "gruntfuggly.triggertaskonsave",
+                "ms-python.black-formatter",
+                "ms-python.python",
+                "ms-python.isort"
+            ]
         }
     },
+    "postStartCommand": "pip3 install --user -r requirements.txt",
+    "postAttachCommand": "python3 -m pytest tests",
     "remoteUser": "vscode"
 }

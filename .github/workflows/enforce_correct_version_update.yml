@@ -1,0 +1,50 @@
+name: Enforce Correct Version Update
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '**/*.py'
+    paths-ignore:
+      - '**/tests/**'
+
+jobs:
+  version-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Detect changed version folders
+        id: detect
+        run: |
+          echo "🔍 Checking changed versioned folders..."
+          CHANGED=$(git diff --name-only origin/main HEAD | grep '^routes/v[0-9]\+/.*\.py$' | grep -v 'test' || true)
+
+          echo "Changed files:"
+          echo "$CHANGED"
+
+          # Extract unique version folders like v1, v2
+          VERSIONS=$(echo "$CHANGED" | sed -n 's|^routes/\(v[0-9]\+\)/.*|\1|p' | sort -u)
+          echo "Detected version folders with changes: $VERSIONS"
+          echo "VERSIONS=$VERSIONS" >> $GITHUB_ENV
+
+      - name: Verify __version__ change per version folder
+        if: env.VERSIONS != ''
+        run: |
+          echo "🔍 Checking for __version__ changes in modified version folders..."
+
+          for v in $VERSIONS; do
+            echo "➡ Checking $v"
+
+            VERSION_CHANGED=$(git diff origin/main HEAD -- routes/$v/__init__.py | grep '__version__ = ' || true)
+
+            if [ -z "$VERSION_CHANGED" ]; then
+              echo "🛑 Version $v was modified, but __version__ was not updated in routes/$v/__init__.py"
+              exit 1
+            else
+              echo "✅ routes/$v/__init__.py includes a version change."
+            fi
+          done
