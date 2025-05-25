@@ -32,7 +32,7 @@ jobs:
           # Extract unique version folders like v1, v2
           VERSIONS=$(echo "$CHANGED" | sed -n 's|^routes/\(v[0-9]\+\)/.*|\1|p' | sort -u)
           echo "Detected version folders with changes: $VERSIONS"
-          echo "VERSIONS=$VERSIONS" >> $GITHUB_ENV
+          echo "VERSIONS=$VERSIONS" >> "$GITHUB_ENV"
 
       - name: Verify __version__ change per version folder
         if: env.VERSIONS != ''
@@ -42,7 +42,7 @@ jobs:
           for v in $VERSIONS; do
             echo "➡ Checking $v"
 
-            VERSION_CHANGED=$(git diff origin/main HEAD -- routes/$v/__init__.py | grep '__version__ = ' || true)
+            VERSION_CHANGED=$(git diff origin/main HEAD -- "routes/$v/__init__.py" | grep '__version__ = ' || true)
 
             if [ -z "$VERSION_CHANGED" ]; then
               echo "🛑 Version $v was modified, but __version__ was not updated in routes/$v/__init__.py"
