@@ -1,5 +1,4 @@
 ---
-# TODO: Change the detected changes to the whole pull request, not just the last commit
 name: Suggest Version Bump
 
 permissions:
@@ -20,6 +19,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Determine affected API versions
         id: changed
