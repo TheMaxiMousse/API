@@ -24,7 +24,9 @@ jobs:
       - name: Determine affected API versions
         id: changed
         run: |
-          CHANGED_FOLDERS=$(git diff --name-only origin/main...HEAD | grep "^routes/" | cut -d/ -f2 | sort -u)
+          git fetch origin main
+          BASE_SHA=$(git merge-base HEAD origin/main)
+          CHANGED_FOLDERS=$(git diff --name-only "$BASE_SHA"...HEAD | grep "^routes/" | cut -d/ -f2 | sort -u | tr '\n' ' ')
           echo "📁 Changed folders detected: $CHANGED_FOLDERS"
           echo "folders=$CHANGED_FOLDERS" >> "$GITHUB_OUTPUT"
 
