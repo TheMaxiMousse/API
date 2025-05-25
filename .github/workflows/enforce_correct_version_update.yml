@@ -10,15 +10,14 @@ on:
       - main
     paths:
       - '**/*.py'
-    paths-ignore:
-      - '**/tests/**'
+      - '!**/tests/**'
 
 jobs:
   version-check:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Detect changed version folders

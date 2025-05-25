@@ -8,11 +8,6 @@ on:
   push:
     branches:
       - main
-    types:
-      - opened
-      - labeled
-      - unlabeled
-      - synchronize
     paths:
       - '**/*.py'
     paths-ignore:
@@ -22,7 +17,7 @@ jobs:
   suggest-bump:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out PR code
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Determine affected API versions
