@@ -1,3 +1,7 @@
+"""
+Base module for the API version 1 routes.
+"""
+
 from fastapi import FastAPI
 
 from .orders import router as order_router

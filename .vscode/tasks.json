@@ -4,7 +4,7 @@
         {
             "label": "Run all tests",
             "type": "shell",
-            "command": "python3 -m pytest app/tests",
+            "command": "python3 -m pytest tests",
             "group": "build",
             "problemMatcher": [],
             "runOptions": {

@@ -10,6 +10,7 @@ from setuptools import find_packages, setup
 
 # Read the Python version from Dockerfile
 def get_python_version():
+    """Retrieve the Python version from the Dockerfile."""
     with open("Dockerfile", encoding="utf-8") as f:
         for line in f:
             if line.startswith("FROM python:"):
@@ -19,6 +20,7 @@ def get_python_version():
 
 # Read the app version from the main module
 def get_app_version():
+    """Retrieve the application version from the main module."""
     with open("app/main.py", encoding="utf-8") as f:
         for line in f:
             if line.startswith("__version__"):
@@ -27,6 +29,7 @@ def get_app_version():
 
 
 def get_requirements():
+    """Retrieve the requirements from the requirements.txt file."""
     with open("requirements.txt", encoding="utf-8") as f:
         return [line.strip() for line in f if line.strip() and not line.startswith("#")]
 
