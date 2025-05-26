@@ -10,18 +10,18 @@ on:
     outputs:
       versions:
         description: "Changed version folders"
-        value: ${{ jobs.detect.outputs.versions }}
+        value: ${{ jobs.detect-changed-versions.outputs.versions }}
 
 jobs:
   detect-changed-versions:
     name: Detect Changed Versions
     runs-on: ubuntu-latest
     outputs:
-      versions: ${{ steps.detect.outputs.versions }}
+      versions: ${{ steps.list-folders.outputs.versions }}
 
     steps:
       - name: Checkout code
-      - uses: actions/checkout@v4
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
