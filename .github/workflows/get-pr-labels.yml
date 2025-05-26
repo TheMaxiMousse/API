@@ -10,7 +10,7 @@ on:
   workflow_call:
     outputs:
       labels:
-        description: "Labels on the pull request"
+        description: 'Labels on the pull request'
         value: ${{ jobs.get-labels.outputs.labels }}
 
 jobs:

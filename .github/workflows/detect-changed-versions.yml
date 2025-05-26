@@ -9,7 +9,7 @@ on:
   workflow_call:
     outputs:
       versions:
-        description: "Changed version folders"
+        description: 'Changed version folders'
         value: ${{ jobs.detect-changed-versions.outputs.versions }}
 
 jobs:
