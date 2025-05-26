@@ -4,11 +4,8 @@
         {
             "label": "Run all tests",
             "type": "shell",
-            "command": "python3 -m pytest tests",
-            "group": {
-                "kind": "test",
-                "isDefault": true
-            },
+            "command": "python3 -m pytest app/tests",
+            "group": "build",
             "problemMatcher": [],
             "runOptions": {
                 "runOn": "default"
@@ -37,6 +34,23 @@
             "presentation": {
                 "panel": "dedicated",
                 "close": true
+            }
+        },
+        {
+            "label": "Package app",
+            "type": "shell",
+            "command": "python setup.py egg_info --egg-base .",
+            "problemMatcher": [],
+            "runOptions": {
+                "runOn": "default"
+            },
+            "presentation": {
+                "panel": "dedicated",
+                "close": true
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
             }
         }
     ]
