@@ -64,4 +64,4 @@ jobs:
             for folder in ${{ steps.changed.outputs.folders }}; do
               echo "- \`routes/$folder/\`: **${{ steps.bump.outputs.bump }}**"
             done
-          } >> $GITHUB_STEP_SUMMARY
+          } >> "$GITHUB_STEP_SUMMARY"
