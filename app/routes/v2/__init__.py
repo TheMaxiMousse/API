@@ -1,4 +1,6 @@
-# routes/v1/__init__.py
+"""
+Base module for the API version 2 routes.
+"""
 
 from fastapi import FastAPI
 

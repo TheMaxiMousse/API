@@ -21,6 +21,10 @@ app.mount("/api/v2", v2)
 
 
 def main():
+    """
+    Main function to run the FastAPI application.
+    This is typically used when running the app with a command like `python main.py`.
+    """
     import uvicorn
 
     uvicorn.run("main:app", reload=True)
