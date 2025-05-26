@@ -8,7 +8,7 @@ from routes.home import router as home_router
 from routes.v1 import api as v1
 from routes.v2 import api as v2
 
-__version__ = "0.1.0"
+__version__ = "0.1.0"  # TODO: Update this version with GitHub Actions
 
 app = FastAPI(title="ChocoMax Shop API")
 
