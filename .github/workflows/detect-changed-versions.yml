@@ -13,7 +13,8 @@ on:
         value: ${{ jobs.detect.outputs.versions }}
 
 jobs:
-  detect:
+  detect-changed-versions:
+    name: Detect Changed Versions
     runs-on: ubuntu-latest
     outputs:
       versions: ${{ steps.detect.outputs.versions }}
@@ -24,7 +25,7 @@ jobs:
           fetch-depth: 0
 
       - name: Detect changed version folders
-        id: detect
+        id: list-folders
         run: |
           git fetch origin main
           BASE_SHA=$(git merge-base HEAD origin/main)

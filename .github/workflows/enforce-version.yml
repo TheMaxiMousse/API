@@ -14,23 +14,24 @@ on:
       - '!**/tests/**'
 
 jobs:
-  detect:
+  detect-changed-versions:
     uses: ./.github/workflows/detect-changed-versions.yml
 
   check-version:
-    needs: detect
+    name: Check __version__ Changes
+    needs: detect-changed-versions
     runs-on: ubuntu-latest
-    if: needs.detect.outputs.versions != ''
+    if: needs.detect-changed-versions.outputs.versions != ''
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Check __version__ changes
+      - name: Check __version__ change for each version
         run: |
           git fetch origin main
           BASE_SHA=$(git merge-base HEAD origin/main)
-          for v in ${{ needs.detect.outputs.versions }}; do
+          for v in ${{ needs.detect-changed-versions.outputs.versions }}; do
             VERSION_CHANGED=$(git diff "$BASE_SHA"...HEAD -- "routes/$v/__init__.py" | grep '__version__ = ' || true)
             if [ -z "$VERSION_CHANGED" ]; then
               echo "🛑 Version $v changed, but __version__ not updated."

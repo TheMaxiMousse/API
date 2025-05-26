@@ -18,8 +18,12 @@ jobs:
     uses: ./.github/workflows/get-pr-labels.yml
 
   analyze:
-    needs: [suggest, labels]
+    name: Analyze Changes and Suggest Bumps
+    needs:
+      - suggest
+      - labels
     runs-on: ubuntu-latest
+
     steps:
       - name: Determine bump type
         id: bump
