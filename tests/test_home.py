@@ -1,11 +1,16 @@
+"""
+Test the home endpoint of the API.
+"""
+
 from fastapi.testclient import TestClient
 
-from main import app
+from app.main import app
 
 client = TestClient(app)
 
 
 def test_home():
+    """Test the home endpoint."""
     response = client.get("/")
     assert response.status_code == 200
-    assert response.json() == {"message": "Welcome to the ChocoMax Shop API"}
+    assert response.json() == {"message": "Welcome to the ChocoMax Shop API!"}

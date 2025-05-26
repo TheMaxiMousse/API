@@ -1,0 +1,86 @@
+name: Enforce Correct Version Update
+
+permissions:
+  contents: read
+  statuses: write
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '**/*.py'
+      - '!**/tests/**'
+
+jobs:
+  version-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed version folders and main.py
+        id: detect
+        run: |
+          echo "🔍 Checking changed versioned folders and main.py..."
+
+          git fetch origin main
+          BASE_SHA=$(git merge-base HEAD origin/main)
+
+          # List changed Python files (excluding tests)
+          CHANGED=$(git diff --name-only "$BASE_SHA"...HEAD | grep '\.py$' | grep -v 'test' || true)
+          echo "$CHANGED"
+
+          # Extract unique version folders like v1, v2
+          VERSIONS=$(echo "$CHANGED" | sed -n 's|^app/routes/\(v[0-9]\+\)/.*|\1|p' | sort -u | tr '\n' ' ')
+          echo "Detected version folders with changes: $VERSIONS"
+          echo "VERSIONS=$VERSIONS" >> "$GITHUB_ENV"
+
+          # Check if main.py was modified
+          MAIN_CHANGED=$(echo "$CHANGED" | grep '^app/main.py$' || true)
+          echo "MAIN_CHANGED=$MAIN_CHANGED" >> "$GITHUB_ENV"
+
+      - name: Verify version changes and summarize
+        run: |
+          echo "📋 Running version change checks..."
+
+          git fetch origin main
+          BASE_SHA=$(git merge-base HEAD origin/main)
+
+          REPORT=""
+          EXIT_CODE=0
+
+          # Check version folders
+          for v in $VERSIONS; do
+            echo "➡ Checking app/routes/$v/__init__.py"
+            VERSION_CHANGED=$(git diff "$BASE_SHA"...HEAD -- "app/routes/$v/__init__.py" | grep '__version__ = ' || true)
+
+            if [ -z "$VERSION_CHANGED" ]; then
+              REPORT+="🛑 Version $v was modified, but __version__ was not updated in app/routes/$v/__init__.py\n"
+              EXIT_CODE=1
+            else
+              REPORT+="✅ app/routes/$v/__init__.py includes a version change.\n"
+            fi
+          done
+
+          # Check main.py
+          if [ -n "$MAIN_CHANGED" ]; then
+            echo "➡ Checking app/main.py"
+            VERSION_CHANGED=$(git diff "$BASE_SHA"...HEAD -- "app/main.py" | grep '__version__ = ' || true)
+
+            if [ -z "$VERSION_CHANGED" ]; then
+              REPORT+="🛑 main.py was modified, but __version__ was not updated in app/main.py\n"
+              EXIT_CODE=1
+            else
+              REPORT+="✅ app/main.py includes a version change.\n"
+            fi
+          fi
+
+          echo -e "\n==== Version Check Report ===="
+          echo -e "$REPORT"
+          echo "================================"
+
+          exit $EXIT_CODE

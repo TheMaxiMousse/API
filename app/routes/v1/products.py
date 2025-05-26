@@ -1,3 +1,7 @@
+"""
+This module defines the API routes for managing products.
+"""
+
 from fastapi import APIRouter
 
 router = APIRouter()
@@ -62,4 +66,5 @@ products = [
 
 @router.get("/")
 def get_products():
+    """Retrieve a list of all products."""
     return products
