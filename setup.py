@@ -19,19 +19,21 @@ def get_app_version():
     raise RuntimeError("App version not found in app.main module.")
 
 
+def get_requirements():
+    with open("requirements.txt", encoding="utf-8") as f:
+        return [line.strip() for line in f if line.strip() and not line.startswith("#")]
+
+
 setup(
     name="chocomax-api",
-    version=get_app_version() or "draft",
+    version=get_app_version(),
     url="https://github.com/TheChocoMax/API",
     description="ChocoMax API",
     author="Vianpyro",
     packages=find_packages(where="app", exclude=["tests*"]),
     package_dir={"": "app"},
     include_package_data=True,
-    install_requires=[
-        "fastapi",
-        "uvicorn[standard]",
-    ],
+    install_requires=get_requirements(),
     python_requires=f">={get_python_version()}",
     classifiers=[
         "Programming Language :: Python :: 3",
