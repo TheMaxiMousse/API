@@ -4,6 +4,7 @@ name: Get PR Labels
 permissions:
   contents: read
   statuses: read
+  pull-requests: read
 
 on:
   workflow_call:
@@ -19,6 +20,11 @@ jobs:
       labels: ${{ steps.labels.outputs.labels }}
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Get PR labels
         id: labels
         run: |
