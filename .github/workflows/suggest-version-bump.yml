@@ -1,0 +1,42 @@
+name: Suggest Version Bump
+
+permissions:
+  contents: read
+  statuses: read
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '**/*.py'
+      - '!**/tests/**'
+
+jobs:
+  suggest:
+    uses: ./.github/workflows/detect-changed-versions.yml
+  labels:
+    uses: ./.github/workflows/get-pr-labels.yml
+
+  analyze:
+    needs: [suggest, labels]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Determine bump type
+        id: bump
+        run: |
+          LABELS="${{ needs.labels.outputs.labels }}"
+          BUMP="patch"
+          echo "$LABELS" | grep -q 'type: feature' && BUMP="minor"
+          echo "$LABELS" | grep -q 'type: security' && BUMP="minor"
+          # ... other types
+          echo "bump=$BUMP" >> "$GITHUB_OUTPUT"
+
+      - name: Report summary
+        if: needs.suggest.outputs.versions != ''
+        run: |
+          {
+            echo "### 🚀 Suggested Version Bumps"
+            for v in ${{ needs.suggest.outputs.versions }}; do
+              echo "- \`routes/$v/\`: **${{ steps.bump.outputs.bump }}**"
+            done
+          } >> "$GITHUB_STEP_SUMMARY"

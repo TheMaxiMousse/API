@@ -3,7 +3,7 @@ name: Enforce Correct Version Update
 
 permissions:
   contents: read
-  statuses: write
+  statuses: read
 
 on:
   pull_request:
@@ -14,47 +14,28 @@ on:
       - '!**/tests/**'
 
 jobs:
-  version-check:
-    runs-on: ubuntu-latest
+  detect:
+    uses: ./.github/workflows/detect-changed-versions.yml
 
+  check-version:
+    needs: detect
+    runs-on: ubuntu-latest
+    if: needs.detect.outputs.versions != ''
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Detect changed version folders
-        id: detect
+      - name: Check __version__ changes
         run: |
-          echo "🔍 Checking changed versioned folders..."
-
           git fetch origin main
           BASE_SHA=$(git merge-base HEAD origin/main)
-
-          CHANGED=$(git diff --name-only "$BASE_SHA"...HEAD | grep '^routes/v[0-9]\+/.*\.py$' | grep -v 'test' || true)
-
-          echo "Changed files:"
-          echo "$CHANGED"
-
-          # Extract unique version folders like v1, v2
-          VERSIONS=$(echo "$CHANGED" | sed -n 's|^routes/\(v[0-9]\+\)/.*|\1|p' | sort -u | tr '\n' ' ')
-          echo "Detected version folders with changes: $VERSIONS"
-          echo "VERSIONS=$VERSIONS" >> "$GITHUB_ENV"
-
-      - name: Verify __version__ change per version folder
-        if: env.VERSIONS != ''
-        run: |
-          echo "🔍 Checking for __version__ changes in modified version folders..."
-
-          for v in $VERSIONS; do
-            echo "➡ Checking $v"
-
+          for v in ${{ needs.detect.outputs.versions }}; do
             VERSION_CHANGED=$(git diff "$BASE_SHA"...HEAD -- "routes/$v/__init__.py" | grep '__version__ = ' || true)
-
             if [ -z "$VERSION_CHANGED" ]; then
-              echo "🛑 Version $v was modified, but __version__ was not updated in routes/$v/__init__.py"
+              echo "🛑 Version $v changed, but __version__ not updated."
               exit 1
             else
-              echo "✅ routes/$v/__init__.py includes a version change."
+              echo "✅ $v version updated."
             fi
           done

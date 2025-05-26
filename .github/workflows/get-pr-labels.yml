@@ -1,0 +1,28 @@
+---
+name: Get PR Labels
+
+permissions:
+  contents: read
+  statuses: read
+
+on:
+  workflow_call:
+    outputs:
+      labels:
+        description: "Labels on the pull request"
+        value: ${{ jobs.get-labels.outputs.labels }}
+
+jobs:
+  get-labels:
+    runs-on: ubuntu-latest
+    outputs:
+      labels: ${{ steps.labels.outputs.labels }}
+
+    steps:
+      - name: Get PR labels
+        id: labels
+        run: |
+          LABELS=$(gh pr view "${{ github.event.pull_request.number }}" --json labels --jq '[.labels[].name] | join(" ")')
+          echo "labels=$LABELS" >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ github.token }}

@@ -4,7 +4,7 @@ name: Lint
 permissions:
   contents: read
   packages: read
-  statuses: write
+  statuses: read
 
 on:
   push:
