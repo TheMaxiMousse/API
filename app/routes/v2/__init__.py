@@ -4,4 +4,4 @@ from fastapi import FastAPI
 
 __version__ = "2.0.0"
 
-api = FastAPI(title=f"ChocoMax Shop API", version=__version__)
+api = FastAPI(title="ChocoMax Shop API", version=__version__)

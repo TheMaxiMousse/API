@@ -1,3 +1,7 @@
+"""
+This module defines the API routes for order management.
+"""
+
 from fastapi import APIRouter
 
 router = APIRouter()
@@ -43,4 +47,5 @@ orders = [
 
 @router.get("/")
 def get_orders():
+    """Retrieve all orders."""
     return orders

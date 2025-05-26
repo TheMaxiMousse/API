@@ -1,3 +1,8 @@
+"""
+This is the main entry point for the API application.
+It sets up the FastAPI application, includes the home router, and mounts versioned APIs.
+"""
+
 from fastapi import FastAPI
 from routes.home import router as home_router
 from routes.v1 import api as v1

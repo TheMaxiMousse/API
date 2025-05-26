@@ -1,3 +1,10 @@
+"""
+Package setup script for the API.
+This script is used to package the API application for distribution.
+It reads the Python version from the Dockerfile and the application version from the main module.
+It also reads the requirements from a requirements.txt file and sets up the package metadata.
+"""
+
 from setuptools import find_packages, setup
 
 
