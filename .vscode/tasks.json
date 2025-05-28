@@ -26,7 +26,7 @@
         {
             "label": "Start FastAPI server",
             "type": "shell",
-            "command": "python3 main.py",
+            "command": "uvicorn app.main:app --reload",
             "problemMatcher": [],
             "runOptions": {
                 "runOn": "default"
@@ -39,7 +39,7 @@
         {
             "label": "Package app",
             "type": "shell",
-            "command": "python setup.py egg_info --egg-base .",
+            "command": "rm -rf build dist *.egg-info && python setup.py sdist bdist_wheel",
             "problemMatcher": [],
             "runOptions": {
                 "runOn": "default"
