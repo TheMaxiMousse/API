@@ -9,8 +9,6 @@ from app.routes.home import router as home_router
 from app.routes.v1 import api as v1
 from app.routes.v2 import api as v2
 
-__version__ = "0.1.0"
-
 app = FastAPI(title="ChocoMax Shop API")
 
 # Home (non-versioned)

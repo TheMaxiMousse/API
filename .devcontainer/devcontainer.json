@@ -14,7 +14,7 @@
             ]
         }
     },
-    "postStartCommand": "pip3 install --user -r requirements.txt",
+    "postStartCommand": "pip3 install --user -r requirements-dev.txt",
     "postAttachCommand": "python3 -m pytest tests",
     "remoteUser": "vscode"
 }

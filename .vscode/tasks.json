@@ -39,14 +39,13 @@
         {
             "label": "Package app",
             "type": "shell",
-            "command": "rm -rf build dist *.egg-info && python setup.py sdist bdist_wheel",
+            "command": "rm -rf build dist *.egg-info && python -m build",
             "problemMatcher": [],
             "runOptions": {
                 "runOn": "default"
             },
             "presentation": {
-                "panel": "dedicated",
-                "close": true
+                "panel": "dedicated"
             },
             "group": {
                 "kind": "build",
