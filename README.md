@@ -1,6 +1,6 @@
 # ChocoMax API
 
-Backend service for the **ChocoMax** shop site, delivering essential business logic and data through a modern, FastAPI-powered interface.
+API service for the **ChocoMax** shop site, delivering essential business logic and data through a modern, FastAPI-powered interface.
 
 This repository serves as the core **API application** for ChocoMax. It handles product listings, orders, user preferences, and more — enabling both the website and any future clients (like mobile apps) to interact with the system.
 
@@ -10,7 +10,7 @@ This repository serves as the core **API application** for ChocoMax. It handles 
 
 **ChocoMax** is a growing project focused on bringing chocolate lovers a modern, efficient way to shop online.
 
-This backend repository powers:
+This API repository powers:
 
 - 📦 Product and order management
 - 🔐 Authentication and user preferences
@@ -22,14 +22,13 @@ This backend repository powers:
 
 ## 📦 What’s in this Repository?
 
-- FastAPI-based backend application
-- SQL-powered database layer using MariaDB
+- FastAPI-based API
 - RESTful endpoints with API versioning
 - Docker and DevContainer support
 - Packageable as a Python module
 
 > [!NOTE]
-> This repo contains the backend only. It does not include frontend assets or user interface elements.
+> This repository contains only the API logic. It does not include front-end assets, user interfaces, or any kind of data storage.
 
 ## 🧭 Project Resources
 
@@ -41,7 +40,6 @@ This backend repository powers:
 ## 🛠️ Tech Stack
 
 - [FastAPI](https://fastapi.tiangolo.com) — Web framework
-- [MariaDB](https://mariadb.org) — SQL database engine
 - [Docker](https://www.docker.com) — Containerized builds and deployments
 - [Dev Containers](https://containers.dev) — Reproducible development environments
 - [VS Code Tasks](https://code.visualstudio.com/docs/editor/tasks) — Custom automation
@@ -50,16 +48,15 @@ This backend repository powers:
 
 A ready-to-use **development container** is defined in `.devcontainer/`. Features:
 
-- 🐧 Alpine-based image with FastAPI, sqlfluff, and MariaDB
+- 🐧 Alpine-based image with FastAPI.
 - 🚀 Launches a fully functional API and DB environment with one command
-- 📎 Includes VS Code extensions and automation tasks (build, test, lint)
-- 🔒 No local database setup required
+- 📎 Includes VS Code extensions and automation tasks (build, test)
 
 ### ▶️ Getting Started (DevContainer)
 
 1. Open the repository in **Visual Studio Code**
 2. Select **“Reopen in Container”**
-3. Run the `Launch API` task (or use `uvicorn` manually)
+3. Run the `Start FastAPI server` task (or use `uvicorn` manually)
 
 ## 📦 Building the Project
 
