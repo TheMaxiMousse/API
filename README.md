@@ -49,7 +49,7 @@ This API repository powers:
 A ready-to-use **development container** is defined in `.devcontainer/`. Features:
 
 - 🐧 Alpine-based image with FastAPI.
-- 🚀 Launches a fully functional API and DB environment with one command
+- 🚀 Launches a fully functional API environment with one command
 - 📎 Includes VS Code extensions and automation tasks (build, test)
 
 ### ▶️ Getting Started (DevContainer)
