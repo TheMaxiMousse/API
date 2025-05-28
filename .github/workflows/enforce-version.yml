@@ -22,30 +22,31 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Detect changed version folders and main.py
+      - name: Detect changed Python files and API version
         id: detect
         run: |
-          echo "🔍 Checking changed versioned folders and main.py..."
+          echo "🔍 Checking for changed Python files (excluding tests)..."
 
           git fetch origin main
           BASE_SHA=$(git merge-base HEAD origin/main)
 
           # List changed Python files (excluding tests)
           CHANGED=$(git diff --name-only "$BASE_SHA"...HEAD | grep '\.py$' | grep -v 'test' || true)
+          echo "Changed files:"
           echo "$CHANGED"
+
+          echo "CHANGED_FILES<<EOF" >> $GITHUB_ENV
+          echo "$CHANGED" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
           # Extract unique version folders like v1, v2
           VERSIONS=$(echo "$CHANGED" | sed -n 's|^app/routes/\(v[0-9]\+\)/.*|\1|p' | sort -u | tr '\n' ' ')
           echo "Detected version folders with changes: $VERSIONS"
           echo "VERSIONS=$VERSIONS" >> "$GITHUB_ENV"
 
-          # Check if main.py was modified
-          MAIN_CHANGED=$(echo "$CHANGED" | grep '^app/main.py$' || true)
-          echo "MAIN_CHANGED=$MAIN_CHANGED" >> "$GITHUB_ENV"
-
       - name: Verify version changes and summarize
         run: |
-          echo "📋 Running version change checks..."
+          echo "📋 Running version enforcement checks..."
 
           git fetch origin main
           BASE_SHA=$(git merge-base HEAD origin/main)
@@ -66,16 +67,16 @@ jobs:
             fi
           done
 
-          # Check main.py
-          if [ -n "$MAIN_CHANGED" ]; then
-            echo "➡ Checking app/main.py"
-            VERSION_CHANGED=$(git diff "$BASE_SHA"...HEAD -- "app/main.py" | grep '__version__ = ' || true)
+          # If any .py files changed, enforce version.py update
+          if [ -n "$CHANGED_FILES" ]; then
+            echo "➡ Checking if __version__ was updated in app/version.py"
+            VERSION_PY_CHANGED=$(git diff "$BASE_SHA"...HEAD -- "app/version.py" | grep '__version__ = ' || true)
 
-            if [ -z "$VERSION_CHANGED" ]; then
-              REPORT+="🛑 main.py was modified, but __version__ was not updated in app/main.py\n"
+            if [ -z "$VERSION_PY_CHANGED" ]; then
+              REPORT+="🛑 Python code was changed, but __version__ was not updated in app/version.py\n"
               EXIT_CODE=1
             else
-              REPORT+="✅ app/main.py includes a version change.\n"
+              REPORT+="✅ app/version.py includes a version change.\n"
             fi
           fi
 
