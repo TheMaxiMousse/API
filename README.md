@@ -74,8 +74,7 @@ Then visit: [http://localhost:8000](http://localhost:8000)
 Generate the package (without installing it locally):
 
 ```bash
-# Clean previous build artifacts and generate a fresh Python package
-python setup.py clean --all sdist bdist_wheel
+python -m build
 ```
 
 > This will create a `dist/` directory containing your `.whl` and `.tar.gz` packages.

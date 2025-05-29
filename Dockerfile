@@ -11,7 +11,7 @@ RUN apk add --no-cache curl openssl
 COPY . .
 
 # Install Python dependencies
-RUN pip install --no-cache-dir .
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Use non-root user after installation
 USER apiuser
