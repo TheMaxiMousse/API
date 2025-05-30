@@ -2,7 +2,7 @@
 
 API service for the **ChocoMax** shop site, delivering essential business logic and data through a modern, FastAPI-powered interface.
 
-This repository serves as the core **API application** for ChocoMax. It handles product listings, orders, user preferences, and more — enabling both the website and any future clients (like mobile apps) to interact with the system.
+This repository serves as the core **API application** for ChocoMax. It handles product listings, orders, user preferences, and more — enabling both the site and any future clients (like mobile apps) to interact with the system.
 
 ---
 
@@ -42,7 +42,7 @@ This API repository powers:
 - [FastAPI](https://fastapi.tiangolo.com) — Web framework
 - [Docker](https://www.docker.com) — Containerized builds and deployments
 - [Dev Containers](https://containers.dev) — Reproducible development environments
-- [VS Code Tasks](https://code.visualstudio.com/docs/editor/tasks) — Custom automation
+- [Visual Studio Code Tasks](https://code.visualstudio.com/docs/editor/tasks) — Custom automation
 
 ## ⚙️ Devcontainer
 
@@ -50,7 +50,7 @@ A ready-to-use **development container** is defined in `.devcontainer/`. Feature
 
 - 🐧 Alpine-based image with FastAPI.
 - 🚀 Launches a fully functional API environment with one command
-- 📎 Includes VS Code extensions and automation tasks (build, test)
+- 📎 Includes Visual Studio Code extensions and automation tasks (build, test)
 
 ### ▶️ Getting Started (DevContainer)
 

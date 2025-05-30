@@ -36,9 +36,9 @@ jobs:
           echo "Changed files:"
           echo "$CHANGED"
 
-          echo "CHANGED_FILES<<EOF" >> $GITHUB_ENV
-          echo "$CHANGED" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+          echo "CHANGED_FILES<<EOF" >> "$GITHUB_ENV"
+          echo "$CHANGED" >> "$GITHUB_ENV"
+          echo "EOF" >> "$GITHUB_ENV"
 
           # Extract unique version folders like v1, v2
           VERSIONS=$(echo "$CHANGED" | sed -n 's|^app/routes/\(v[0-9]\+\)/.*|\1|p' | sort -u | tr '\n' ' ')
