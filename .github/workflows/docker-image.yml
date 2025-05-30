@@ -31,6 +31,6 @@ jobs:
 
       - name: Build and push Docker image
         run: |
-          IMAGE=ghcr.io/${{ github.repository_owner }}/chocomax-fastapi-image:${{ steps.version.outputs.tag }}
+          IMAGE=ghcr.io/${{ github.repository_owner.toLowerCase() }}/${{ github.repository.toLowerCase() }}-image:${{ steps.version.outputs.tag }}
           docker build -t $IMAGE .
           docker push $IMAGE
