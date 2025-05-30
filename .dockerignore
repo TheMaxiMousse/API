@@ -1,0 +1,27 @@
+# Python cache and compiled files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Build and dist artifacts
+*.egg-info/
+dist/
+build/
+
+# Development and test files
+tests/
+requirements-dev.txt
+
+# Docs and meta
+README.md
+LICENSE
+
+# IDE and OS-specific files
+.vscode/
+.idea/
+*.DS_Store
+
+# Version control
+.git
+.gitignore
