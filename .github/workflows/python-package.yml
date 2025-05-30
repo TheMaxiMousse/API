@@ -28,9 +28,12 @@ jobs:
           python-version: '3.12.10'
 
       - name: Install dependencies
-        run: pip install build
+        run: pip install build --user
 
-      - name: Build package
+      - name: Set PYTHONPATH so setuptools can find version.py
+        run: echo "PYTHONPATH=${{ github.workspace }}/app" >> $GITHUB_ENV
+
+      - name: Build a binary wheel and a source tarball
         run: python -m build
         working-directory: ${{ github.workspace }}
 
