@@ -27,11 +27,15 @@ jobs:
         with:
           python-version: '3.12.10'
 
-      - run: pip install build
+      - name: Install dependencies
+        run: pip install build
 
-      - run: python -m build
+      - name: Build package
+        run: python -m build
+        working-directory: ${{ github.workspace }}
 
-      - uses: softprops/action-gh-release@v2
+      - name: Upload package artifacts
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.version.outputs.tag }}
           draft: true
