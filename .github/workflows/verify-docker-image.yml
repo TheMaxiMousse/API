@@ -10,8 +10,8 @@ on:
   push:
     branches:
       - main
-  cron:
-    - '0 4 * * 1'  # Every monday at 4:00 UTC
+  schedule:
+    - cron: '0 4 * * 1'  # Every monday at 4:00 UTC
   pull_request: null
 
 jobs:
