@@ -1,5 +1,4 @@
----
-name: Scan Devcontainer Image
+name: Scan Images
 
 permissions:
   actions: read
@@ -13,11 +12,20 @@ on:
   pull_request: null
 
 jobs:
-  scan-devcontainer:
-    name: Scan Devcontainer Image
-
+  scan-images:
+    name: Scan ${{ matrix.image_name }} Image
     uses: Vianpyro/Template/.github/workflows/docker-image-verification.yml@main
+    strategy:
+      matrix:
+        include:
+          - image_name: devcontainer
+            dockerfile_path: ./Dockerfile
+            context: .devcontainer
+
+          - image_name: production
+            dockerfile_path: ./Dockerfile
+            context: .
     with:
-      image_name: devcontainer
-      dockerfile_path: ./Dockerfile
-      context: .devcontainer
+      image_name: ${{ matrix.image_name }}
+      dockerfile_path: ${{ matrix.dockerfile_path }}
+      context: ${{ matrix.context }}
