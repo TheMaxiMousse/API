@@ -9,22 +9,26 @@ on:
   push:
     branches:
       - main
+  cron:
+    - '0 4 * * 1'  # Every monday at 4:00 UTC
   pull_request: null
 
 jobs:
   scan-images:
     name: Scan ${{ matrix.image_name }} Image
     uses: Vianpyro/Template/.github/workflows/docker-image-verification.yml@main
+
     strategy:
       matrix:
         include:
-          - image_name: devcontainer
+          - image_name: DevContainer
             dockerfile_path: ./Dockerfile
             context: .devcontainer
 
-          - image_name: production
+          - image_name: Production
             dockerfile_path: ./Dockerfile
             context: .
+
     with:
       image_name: ${{ matrix.image_name }}
       dockerfile_path: ${{ matrix.dockerfile_path }}
