@@ -10,18 +10,70 @@ on:
       - main
   workflow_dispatch:
 
+env:
+  TRIGGER_BRANCH: main
+  FILE_FILTER_PATTERN: '^(?!tests/).*\.py$'
+
 jobs:
-  build-python:
+  release:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code and fetch tags
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Extract version
+      - name: Check for modified matching files
+        id: check_changes
+        run: |
+          echo "Trigger branch: $TRIGGER_BRANCH"
+          echo "File filter pattern: $FILE_FILTER_PATTERN"
+
+          git fetch origin "$TRIGGER_BRANCH" --depth=2
+          MODIFIED=$(git diff --name-only HEAD^ HEAD)
+
+          echo "Modified files:"
+          echo "$MODIFIED"
+
+          MATCHING=$(echo "$MODIFIED" | grep -E "$FILE_FILTER_PATTERN" || true)
+
+          echo "Matching files:"
+          echo "$MATCHING"
+
+          if [[ -n "$MATCHING" ]]; then
+            echo "should_trigger=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "should_trigger=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Extract version from app/version.py
         id: version
         run: |
           VERSION=$(grep -oP '__version__\s*=\s*"\K[0-9]+\.[0-9]+\.[0-9]+' app/version.py)
-          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+          if [[ -z "$VERSION" ]]; then
+            echo "Failed to extract version from app/version.py"
+            exit 1
+          fi
+          TAG="v$VERSION"
+          echo "Version extracted: $TAG"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Create draft release
+        if: steps.check_changes.outputs.should_trigger == 'true'
+        run: |
+          curl -X POST \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/${{ github.repository }}/releases \
+            -d '{
+              "tag_name": "${{ steps.version.outputs.tag }}",
+              "target_commitish": "'"$TRIGGER_BRANCH"'",
+              "name": "${{ steps.version.outputs.tag }}",
+              "draft": true,
+              "prerelease": false,
+              "generate_release_notes": true
+            }'
 
       - uses: actions/setup-python@v5
         with:
@@ -33,11 +85,11 @@ jobs:
       - name: Set PYTHONPATH so setuptools can find version.py
         run: echo "PYTHONPATH=${{ github.workspace }}/app" >> "$GITHUB_ENV"
 
-      - name: Build a binary wheel and a source tarball
+      - name: Build the binary wheel and source tarball
         run: python -m build
         working-directory: ${{ github.workspace }}
 
-      - name: Upload package artifacts
+      - name: Upload package artifacts to release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.version.outputs.tag }}

@@ -2,6 +2,31 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "Delete old Git branches",
+            "type": "shell",
+            "command": "git fetch --prune && git fetch -p ; git branch -r | awk '{print $1}' | egrep -v -f /dev/fd/0 <(git branch -vv | grep origin) | awk '{print $1}' | xargs git branch -D",
+            "problemMatcher": [],
+            "presentation": {
+                "showReuseMessage": false
+            }
+        },
+        {
+            "label": "Package app",
+            "type": "shell",
+            "command": "rm -rf build dist *.egg-info && python -m build",
+            "problemMatcher": [],
+            "runOptions": {
+                "runOn": "default"
+            },
+            "presentation": {
+                "panel": "dedicated"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
             "label": "Run all tests",
             "type": "shell",
             "command": "python3 -m pytest tests",
@@ -34,22 +59,6 @@
             "presentation": {
                 "panel": "dedicated",
                 "close": true
-            }
-        },
-        {
-            "label": "Package app",
-            "type": "shell",
-            "command": "rm -rf build dist *.egg-info && python -m build",
-            "problemMatcher": [],
-            "runOptions": {
-                "runOn": "default"
-            },
-            "presentation": {
-                "panel": "dedicated"
-            },
-            "group": {
-                "kind": "build",
-                "isDefault": true
             }
         }
     ]
