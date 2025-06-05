@@ -1,5 +1,5 @@
 ---
-name: Create a Draft Release
+name: Build Python Package
 
 permissions:
   contents: write
@@ -15,7 +15,7 @@ env:
   FILE_FILTER_PATTERN: '^(?!tests/).*\.py$'
 
 jobs:
-  create-release-draft:
+  release:
     runs-on: ubuntu-latest
 
     steps:
@@ -55,22 +55,32 @@ jobs:
             echo "Failed to extract version from app/version.py"
             exit 1
           fi
-          TAG="v$VERSION"
-          echo "Version extracted: $TAG"
-          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
 
-      - name: Create draft release
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12.10'
+
+      - name: Install build dependencies
+        run: pip install --user build
+
+      - name: Set PYTHONPATH so setuptools can find version.py
+        run: echo "PYTHONPATH=${{ github.workspace }}/app" >> "$GITHUB_ENV"
+
+      - name: Build the binary wheel and source tarball
+        run: python -m build
+        working-directory: ${{ github.workspace }}
+
+      - name: Create draft release and upload package
         if: steps.check_changes.outputs.should_trigger == 'true'
-        run: |
-          curl -X POST \
-            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            -H "Accept: application/vnd.github+json" \
-            https://api.github.com/repos/${{ github.repository }}/releases \
-            -d '{
-              "tag_name": "${{ steps.version.outputs.tag }}",
-              "target_commitish": "'"$TRIGGER_BRANCH"'",
-              "name": "${{ steps.version.outputs.tag }}",
-              "draft": true,
-              "prerelease": false,
-              "generate_release_notes": true
-            }'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          draft: true
+          generate_release_notes: true
+          name: Version ${{ steps.version.outputs.version }}
+          files: |
+            dist/*.tar.gz
+            dist/*.whl

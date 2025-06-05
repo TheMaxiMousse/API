@@ -1,5 +1,5 @@
 ---
-name: Build Docker Image
+name: Package Docker Image
 
 permissions:
   packages: write
