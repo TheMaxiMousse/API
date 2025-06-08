@@ -80,7 +80,7 @@ jobs:
           echo "next_version=$NEXT_VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Report summary
-        if: needs.next_version.outputs.next_version != ''
+        # if: needs.next_version.outputs.next_version != ''
         run: |
           {
             echo "### 🚀 Suggested Version Bump: **${{ steps.bump.outputs.bump }}**"
