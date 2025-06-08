@@ -43,9 +43,12 @@
             "group": {
                 "kind": "test"
             },
+            "presentation": {
+                "close": true
+            },
             "problemMatcher": [],
             "runOptions": {
-                "runOn": "default"
+                "runOn": "default",
             }
         },
         {
