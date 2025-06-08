@@ -15,6 +15,8 @@ on:
 jobs:
   detect-changes:
     uses: ./.github/workflows/detect-changed-versions.yml
+  suggest-version-bump:
+    uses: ./.github/workflows/suggest-version-bump.yml
 
   enforce-version:
     needs: detect-changes
@@ -61,12 +63,4 @@ jobs:
 
           echo -e "$REPORT"
           echo -e "$REPORT" >> "$GITHUB_STEP_SUMMARY"
-          echo "exit_code=$EXIT_CODE" >> "$GITHUB_OUTPUT"
-
-      - name: Suggest version bump if needed
-        if: steps.check_versions.outputs.exit_code != '0'
-        uses: ./.github/workflows/suggest-version-bump.yml
-
-      - name: Fail if version not updated
-        if: steps.check_versions.outputs.exit_code != '0'
-        run: exit 1
+          exit $EXIT_CODE
