@@ -9,12 +9,6 @@ permissions:
   pull-requests: read
 
 on:
-  pull_request:
-    branches:
-      - main
-    paths:
-      - '**/*.py'
-      - '!**/tests/**'
   workflow_call:
     outputs:
       next_version:
