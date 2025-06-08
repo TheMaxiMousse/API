@@ -26,6 +26,7 @@ jobs:
       - name: Run Super Linter
         uses: super-linter/super-linter/slim@v7
         env:
+          LINTER_RULES_PATH: config/lint
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VALIDATE_ALL_CODEBASE: false
           FILTER_REGEX_EXCLUDE: '(.devcontainer/Dockerfile|.github/pull_request_template.md|.github/ISSUE_TEMPLATE/*.md)'
@@ -45,6 +46,7 @@ jobs:
       - name: Super-linter
         uses: super-linter/super-linter/slim@v7
         env:
+          LINTER_RULES_PATH: config/lint
           VALIDATE_ALL_CODEBASE: false
           FILTER_REGEX_EXCLUDE: '(.github/pull_request_template.md|.github/ISSUE_TEMPLATE/*.md)'
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
