@@ -1,9 +1,0 @@
-[MASTER]
-
-# Use multiple processes to speed up Pylint.
-jobs=0
-
-[MESSAGES CONTROL]
-
-# Ignoring "too-few-public-methods"
-min-public-methods=0
