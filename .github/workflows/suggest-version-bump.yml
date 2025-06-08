@@ -33,6 +33,10 @@ jobs:
       - suggest
       - labels
     runs-on: ubuntu-latest
+    outputs:
+      bump: ${{ steps.bump.outputs.bump }}
+      latest_tag: ${{ steps.latest_tag.outputs.tag }}
+      next_version: ${{ steps.next_version.outputs.next_version }}
 
     steps:
       - name: Checkout code
