@@ -6,4 +6,4 @@ jobs=0
 [MESSAGES CONTROL]
 
 # Ignoring "too-few-public-methods"
-disable=too-few-public-methods
+min-public-methods=0
