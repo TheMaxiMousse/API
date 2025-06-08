@@ -1,4 +1,6 @@
 ---
+# This workflow suggests the next version bump for changed API folders based on PR labels and the latest tag.
+
 name: Suggest Version Bump
 
 permissions:
@@ -13,6 +15,17 @@ on:
     paths:
       - '**/*.py'
       - '!**/tests/**'
+  workflow_call:
+    outputs:
+      next_version:
+        description: 'Suggested next version based on changes and labels'
+        value: ${{ jobs.analyze.outputs.next_version }}
+      bump_type:
+        description: 'Type of version bump suggested (major, minor, patch)'
+        value: ${{ jobs.analyze.outputs.bump }}
+      latest_tag:
+        description: 'Latest tag found in the repository'
+        value: ${{ jobs.analyze.outputs.latest_tag }}
 
 jobs:
   suggest:
@@ -28,6 +41,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Determine bump type
         id: bump
         run: |
@@ -35,15 +53,43 @@ jobs:
           BUMP="patch"
           echo "$LABELS" | grep -q 'type: feature' && BUMP="minor"
           echo "$LABELS" | grep -q 'type: security' && BUMP="minor"
-          # ... other types
+          echo "$LABELS" | grep -q 'type: breaking' && BUMP="major"
           echo "bump=$BUMP" >> "$GITHUB_OUTPUT"
+
+      - name: Get latest tag
+        id: latest_tag
+        run: |
+          TAG=$(git tag --list 'v*' --sort=-v:refname | head -n1)
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Calculate next version
+        id: next_version
+        run: |
+          TAG="${{ steps.latest_tag.outputs.tag }}"
+          BUMP="${{ steps.bump.outputs.bump }}"
+          if [ -z "$TAG" ]; then
+            TAG="v0.0.0"
+          fi
+          VERSION=$(echo "$TAG" | sed -E 's/^v([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
+          PRERELEASE=$(echo "$TAG" | sed -nE 's/^v[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9.-]+)?$/\1/p')
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+          case "$BUMP" in
+            major) MAJOR=$((MAJOR + 1)); MINOR=0; PATCH=0 ;;
+            minor) MINOR=$((MINOR + 1)); PATCH=0 ;;
+            patch) PATCH=$((PATCH + 1)) ;;
+          esac
+          if [ -n "$PRERELEASE" ]; then
+            NEXT_VERSION="v${MAJOR}.${MINOR}.${PATCH}${PRERELEASE}"
+          else
+            NEXT_VERSION="v${MAJOR}.${MINOR}.${PATCH}"
+          fi
+          echo "next_version=$NEXT_VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Report summary
         if: needs.suggest.outputs.versions != ''
         run: |
           {
-            echo "### 🚀 Suggested Version Bumps"
-            for v in ${{ needs.suggest.outputs.versions }}; do
-              echo "- \`routes/$v/\`: **${{ steps.bump.outputs.bump }}**"
-            done
+            echo "### 🚀 Suggested Version Bump: **${{ steps.bump.outputs.bump }}**"
+            echo "#### Latest tag: \`${{ steps.latest_tag.outputs.tag }}\`"
+            echo "#### Next version: \`${{ steps.next_version.outputs.next_version }}\`"
           } >> "$GITHUB_STEP_SUMMARY"

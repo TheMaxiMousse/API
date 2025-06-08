@@ -12,7 +12,7 @@ on:
 
 env:
   TRIGGER_BRANCH: main
-  FILE_FILTER_PATTERN: '^(?!tests/).*\.py$'
+  FILE_FILTER_PATTERN: '^app/version\.py$|^app/routes/v[0-9]+/__init__\.py$'
 
 jobs:
   release:
@@ -31,7 +31,7 @@ jobs:
           echo "File filter pattern: $FILE_FILTER_PATTERN"
 
           git fetch origin "$TRIGGER_BRANCH" --depth=2
-          MODIFIED=$(git diff --name-only HEAD^ HEAD)
+          MODIFIED=$(git diff --name-only origin/"$TRIGGER_BRANCH"...HEAD)
 
           echo "Modified files:"
           echo "$MODIFIED"

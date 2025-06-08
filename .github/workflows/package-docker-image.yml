@@ -21,7 +21,7 @@ jobs:
         id: version
         run: |
           VERSION=$(grep -oP '__version__\s*=\s*"\K[0-9]+\.[0-9]+\.[0-9]+' app/version.py)
-          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=$VERSION" >> "$GITHUB_OUTPUT"
 
       - uses: docker/login-action@v3
         with:
