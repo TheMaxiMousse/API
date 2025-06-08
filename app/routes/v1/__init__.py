@@ -8,7 +8,7 @@ from .endpoints.authentication import router as auth_router
 from .endpoints.orders import router as order_router
 from .endpoints.products import router as product_router
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 api = FastAPI(title="ChocoMax Shop API", version=__version__)
 
