@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.routes.v1.schemas.user.create import UserCreate
+from app.routes.v1.schemas.user.register import UserRegister
 from app.utility.database import get_db
 from app.utility.security import (
     encrypt_email,
@@ -17,7 +17,7 @@ router = APIRouter()
 
 
 @router.post("/register")
-async def register(data: UserCreate, db: AsyncSession = Depends(get_db)):
+async def register(data: UserRegister, db: AsyncSession = Depends(get_db)):
     """Endpoint for user registration using PostgreSQL procedure."""
     username = sanitize_username(data.username)
     email_encrypted = encrypt_email(data.email)
