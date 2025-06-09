@@ -31,6 +31,7 @@ jobs:
           FILTER_REGEX_EXCLUDE: '(.devcontainer/Dockerfile|.github/pull_request_template.md|.github/ISSUE_TEMPLATE/*.md)'
           VALIDATE_PYTHON_ISORT: false
           VALIDATE_PYTHON_MYPY: false
+          VALIDATE_PYTHON_PYLINT: false
 
   fix-lint:
     name: Fix Lint
@@ -50,6 +51,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VALIDATE_PYTHON_ISORT: false
           VALIDATE_PYTHON_MYPY: false
+          VALIDATE_PYTHON_PYLINT: false
           FIX_JSON_PRETTIER: true
           FIX_MARKDOWN: true
           FIX_MARKDOWN_PRETTIER: true
