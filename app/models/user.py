@@ -32,7 +32,7 @@ class User(Base):
         password_hash (str): Argon2 hash of the user's password.
         phone_encrypted (str): AES-encrypted phone number.
         phone_hash (str): SHA-256 hash of the normalized phone number.
-        language_id (int): Preferred language ID.
+        language_iso_code (str): Preferred language ISO code.
         created_at (datetime): Timestamp of user creation.
         updated_at (datetime): Timestamp of last update.
         last_login_at (datetime): Timestamp of last login.
@@ -55,7 +55,7 @@ class User(Base):
     phone_encrypted = Column(Text)
     phone_hash = Column(Text, unique=True)
 
-    language_id = Column(Integer, nullable=True)
+    language_iso_code = Column(Integer, nullable=True)
 
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
     updated_at = Column(DateTime(timezone=True), default=datetime.utcnow)
