@@ -6,4 +6,4 @@ class UserCreate(BaseModel):
     email: EmailStr
     password: str
     phone: str | None = None
-    language_id: int | None = None
+    language_iso_code: str | None = "en"
