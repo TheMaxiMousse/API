@@ -4,17 +4,23 @@ name: Enforce Correct Version Update
 permissions:
   contents: read
   statuses: write
+  pull-requests: read
 
 on:
   pull_request:
     branches:
       - main
     paths:
-      - '**/*.py'
-      - '!**/tests/**'
+      - 'app/**/*.py'
 
 jobs:
-  version-check:
+  detect-changes:
+    uses: ./.github/workflows/detect-changed-versions.yml
+  suggest-version-bump:
+    uses: ./.github/workflows/suggest-version-bump.yml
+
+  enforce-version:
+    needs: detect-changes
     runs-on: ubuntu-latest
 
     steps:
@@ -23,46 +29,32 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Detect changed Python files and API version
-        id: detect
+      - name: Set changed versions
+        id: set_versions
         run: |
-          echo "🔍 Checking for changed Python files (excluding tests)..."
+          echo "VERSIONS=${{ needs.detect-changes.outputs.versions }}" >> "$GITHUB_ENV"
 
+      - name: Check version bumps
+        id: check_versions
+        run: |
           git fetch origin main
           BASE_SHA=$(git merge-base HEAD origin/main)
-
-          # List changed Python files (excluding tests)
-          CHANGED=$(git diff --name-only "$BASE_SHA"...HEAD | grep '\.py$' | grep -v 'test' || true)
-          echo "Changed files:"
-          echo "$CHANGED"
-
-          {
-            echo "CHANGED_FILES<<EOF"
-            echo "$CHANGED"
-            echo "EOF"
-          } >> "$GITHUB_ENV"
-
-          # Extract unique version folders like v1, v2
-          VERSIONS=$(echo "$CHANGED" | sed -n 's|^app/routes/\(v[0-9]\+\)/.*|\1|p' | sort -u | tr '\n' ' ')
-          echo "Detected version folders with changes: $VERSIONS"
-          echo "VERSIONS=$VERSIONS" >> "$GITHUB_ENV"
-
-      - name: Verify version changes and summarize
-        run: |
-          echo "📋 Running version enforcement checks..."
-
-          git fetch origin main
-          BASE_SHA=$(git merge-base HEAD origin/main)
-
-          REPORT=""
           EXIT_CODE=0
+          REPORT=""
 
-          # Check version folders
+          # Check app/version.py
+          VERSION_PY_CHANGED=$(git diff "$BASE_SHA"...HEAD -- "app/version.py" | grep '__version__ = ' || true)
+          if [ -z "$VERSION_PY_CHANGED" ]; then
+            REPORT+="🛑 Python code was changed, but __version__ was not updated in app/version.py\n"
+            EXIT_CODE=1
+          else
+            REPORT+="✅ app/version.py includes a version change.\n"
+          fi
+
+          # Check each changed version folder
           for v in $VERSIONS; do
-            echo "➡ Checking app/routes/$v/__init__.py"
-            VERSION_CHANGED=$(git diff "$BASE_SHA"...HEAD -- "app/routes/$v/__init__.py" | grep '__version__ = ' || true)
-
-            if [ -z "$VERSION_CHANGED" ]; then
+            INIT_CHANGED=$(git diff "$BASE_SHA"...HEAD -- "app/routes/$v/__init__.py" | grep '__version__ = ' || true)
+            if [ -z "$INIT_CHANGED" ]; then
               REPORT+="🛑 Version $v was modified, but __version__ was not updated in app/routes/$v/__init__.py\n"
               EXIT_CODE=1
             else
@@ -70,21 +62,6 @@ jobs:
             fi
           done
 
-          # If any .py files changed, enforce version.py update
-          if [ -n "$CHANGED_FILES" ]; then
-            echo "➡ Checking if __version__ was updated in app/version.py"
-            VERSION_PY_CHANGED=$(git diff "$BASE_SHA"...HEAD -- "app/version.py" | grep '__version__ = ' || true)
-
-            if [ -z "$VERSION_PY_CHANGED" ]; then
-              REPORT+="🛑 Python code was changed, but __version__ was not updated in app/version.py\n"
-              EXIT_CODE=1
-            else
-              REPORT+="✅ app/version.py includes a version change.\n"
-            fi
-          fi
-
-          echo -e "\n==== Version Check Report ===="
           echo -e "$REPORT"
-          echo "================================"
-
+          echo -e "$REPORT" >> "$GITHUB_STEP_SUMMARY"
           exit $EXIT_CODE

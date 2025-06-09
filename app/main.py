@@ -11,9 +11,9 @@ from app.routes.v2 import api as v2
 
 app = FastAPI(title="ChocoMax Shop API")
 
-# Home (non-versioned)
+# Home - non-versioned because it is the main entry point
 app.include_router(home_router)
 
-# Versioned API
+# API versions to make sure applications using the API won't break when the API changes
 app.mount("/api/v1", v1)
 app.mount("/api/v2", v2)
