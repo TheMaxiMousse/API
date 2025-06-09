@@ -18,6 +18,7 @@ router = APIRouter()
 
 @router.post("/register")
 async def register(data: UserRegister, db: AsyncSession = Depends(get_db)):
+    """Endpoint for user registration."""
     username = sanitize_username(data.username)
     email_encrypted = encrypt_email(data.email)
     email_hash = hash_email(data.email)
