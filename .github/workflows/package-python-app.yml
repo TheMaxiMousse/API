@@ -3,6 +3,8 @@ name: Build Python Package
 
 permissions:
   contents: write
+  pull-requests: read
+  statuses: read
 
 on:
   push:
