@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -18,16 +18,28 @@ router = APIRouter()
 
 @router.post("/register")
 async def register(data: UserRegister, db: AsyncSession = Depends(get_db)):
-    """Endpoint for user registration using PostgreSQL procedure."""
     username = sanitize_username(data.username)
     email_encrypted = encrypt_email(data.email)
     email_hash = hash_email(data.email)
     password_hash = hash_password(data.password)
     phone_encrypted = encrypt_phone(data.phone) if data.phone else None
     phone_hash = hash_phone(data.phone) if data.phone else None
-    language_iso_code = data.language_iso_code  # Should be a 2-letter code
+    language_iso_code = data.language_iso_code
 
-    # Call the stored procedure with correct parameter order
+    # Check if user is available
+    result = await db.execute(
+        text(
+            """
+            SELECT is_user_available(:username, :email_hash, :phone_hash) AS available
+        """
+        ),
+        {"username": username, "email_hash": email_hash, "phone_hash": phone_hash},
+    )
+    available = result.scalar()
+
+    if not available:
+        raise HTTPException(409, "Username, email, or phone already exists")
+
     await db.execute(
         text(
             """
