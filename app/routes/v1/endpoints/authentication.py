@@ -11,7 +11,7 @@ from app.utility.security import (
     hash_password,
     hash_phone,
 )
-from app.utility.username import sanitize_username
+from app.utility.string_utils import sanitize_username
 
 router = APIRouter()
 
