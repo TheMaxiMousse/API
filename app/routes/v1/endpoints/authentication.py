@@ -25,7 +25,7 @@ async def register(data: UserRegister, db: AsyncSession = Depends(get_db)):
     password_hash = hash_password(data.password)
     phone_encrypted = encrypt_phone(data.phone) if data.phone else None
     phone_hash = hash_phone(data.phone) if data.phone else None
-    language_iso_code = data.language_iso_code
+    language_id = data.language_id
 
     # Check if user is available
     result = await db.execute(
@@ -51,7 +51,7 @@ async def register(data: UserRegister, db: AsyncSession = Depends(get_db)):
                 :password_hash,
                 :phone_encrypted,
                 :phone_hash,
-                :preferred_language_iso_code
+                :preferred_language_id
             )
             """
         ),
@@ -62,7 +62,7 @@ async def register(data: UserRegister, db: AsyncSession = Depends(get_db)):
             "password_hash": password_hash,
             "phone_encrypted": phone_encrypted,
             "phone_hash": phone_hash,
-            "preferred_language_iso_code": language_iso_code,
+            "preferred_language_id": language_id,
         },
     )
     await db.commit()

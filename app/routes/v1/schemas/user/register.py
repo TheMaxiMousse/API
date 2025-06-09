@@ -6,4 +6,4 @@ class UserRegister(BaseModel):
     email: EmailStr
     password: str
     phone: str | None = None
-    language_iso_code: str | None = "en"
+    language_id: int | None = None
