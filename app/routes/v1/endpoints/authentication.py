@@ -28,15 +28,14 @@ async def login(data: UserLogin, db: AsyncSession = Depends(get_db)):
     if not password_hash or not verify_password(password_hash, password):
         raise HTTPException(401, "Invalid credentials")
 
+    # TODO: Handle 2FA verification here
+
     # Retrieve user information
     result = await db.execute(
         text("SELECT * FROM get_user_info_by_email_hash(:email_hash)"),
         {"email_hash": email_hash},
     )
     user_info = result.fetchone()
-
-    if not user_info:
-        raise HTTPException(404, "User not found")
 
     # TODO: Handle user session creation or token generation here and avoid returning sensitive information
     return dict(user_info._mapping)
