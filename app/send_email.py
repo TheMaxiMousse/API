@@ -11,12 +11,12 @@ load_dotenv(".env")
 
 
 class Envs:
-    MAIL_USERNAME = os.getenv("MAIL_USERNAME")
-    MAIL_PASSWORD = os.getenv("MAIL_PASSWORD")
-    MAIL_FROM = os.getenv("MAIL_FROM")
-    MAIL_PORT = int(os.getenv("MAIL_PORT"))
-    MAIL_SERVER = os.getenv("MAIL_SERVER")
-    MAIL_FROM_NAME = os.getenv("MAIL_FROM_NAME")
+    MAIL_USERNAME = os.getenv("MAIL_USERNAME", "user@example.com")
+    MAIL_PASSWORD = os.getenv("MAIL_PASSWORD", "password")
+    MAIL_FROM = os.getenv("MAIL_FROM", "noreply@chocomax.com")
+    MAIL_PORT = os.getenv("MAIL_PORT", "587")
+    MAIL_SERVER = os.getenv("MAIL_SERVER", "smtp.example.com")
+    MAIL_FROM_NAME = os.getenv("MAIL_FROM_NAME", "ChocoMax")
 
 
 conf = ConnectionConfig(
