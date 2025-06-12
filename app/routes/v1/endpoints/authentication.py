@@ -13,6 +13,10 @@ from app.utility.security import hash_email, hash_password, verify_otp, verify_p
 from app.utility.string_utils import sanitize_username
 
 router = APIRouter()
+_2fa_sessions = (
+    {}
+)  # Temporary in-memory store for 2FA sessions TODO: (replace with Redis or DB in production)
+
 
 # --- Common utility functions ---
 
@@ -46,9 +50,6 @@ async def get_user_info(db: AsyncSession, email_hash: str):
 
 
 # --- Endpoints ---
-
-# Temporary in-memory store for 2FA sessions (replace with Redis or DB in production)
-_2fa_sessions = {}
 
 
 @router.post("/login")
