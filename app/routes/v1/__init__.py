@@ -9,7 +9,7 @@ from .endpoints.email import router as email_router
 from .endpoints.orders import router as order_router
 from .endpoints.products import router as product_router
 
-__version__ = "1.1.0"
+__version__ = "1.2.0"
 
 api = FastAPI(title="ChocoMax Shop API", version=__version__)
 
