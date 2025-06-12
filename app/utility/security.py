@@ -1,6 +1,7 @@
 import base64
 import hashlib
 import os
+import secrets
 
 from argon2 import PasswordHasher
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
@@ -9,6 +10,11 @@ ph = PasswordHasher()
 
 AES_KEY = bytes.fromhex(os.getenv("AES_SECRET_KEY", os.urandom(32).hex()))
 PEPPER = os.getenv("PEPPER", "SuperSecretPepper").encode("utf-8")
+
+
+def create_verification_token() -> str:
+    """Generate a secure random token for email verification."""
+    return secrets.token_urlsafe(32)
 
 
 def normalize_email(email: str) -> str:
@@ -47,6 +53,15 @@ def hash_password(password: str) -> str:
     """Hash a password using Argon2 + pepper."""
     peppered_password = password.encode("utf-8") + PEPPER
     return ph.hash(peppered_password)
+
+
+def verify_password(hashed_password: str, password: str) -> bool:
+    """Verify a password against a hashed password."""
+    peppered_password = password.encode("utf-8") + PEPPER
+    try:
+        return ph.verify(hashed_password, peppered_password)
+    except Exception:
+        return False
 
 
 # Wrappers for email and phone to ensure normalization and hashing

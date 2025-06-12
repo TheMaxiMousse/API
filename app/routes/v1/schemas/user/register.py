@@ -1,9 +1,8 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 
 
 class UserRegister(BaseModel):
+    token: str
     username: str
-    email: EmailStr
     password: str
-    phone: str | None = None
     language_id: int | None = None
