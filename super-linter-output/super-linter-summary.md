@@ -11,6 +11,9 @@
 | JSCPD                      | Pass ✅           |
 | JSON                       | Pass ✅           |
 | JSON_PRETTIER              | Pass ✅           |
+| MARKDOWN                   | Pass ✅           |
+| MARKDOWN_PRETTIER          | Pass ✅           |
+| NATURAL_LANGUAGE           | Pass ✅           |
 | PYTHON_BLACK               | Pass ✅           |
 | PYTHON_FLAKE8              | Pass ✅           |
 | PYTHON_PYINK               | Pass ✅           |
