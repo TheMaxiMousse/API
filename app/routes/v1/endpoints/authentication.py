@@ -1,43 +1,127 @@
 import random
+import secrets
+import time
 
 from fastapi import APIRouter, Depends, HTTPException
+from pyotp import random_base32 as generate_otp_secret
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.routes.v1.schemas.user import UserLogin, UserRegister
+from app.routes.v1.schemas.user import UserLogin, UserLogin2FA, UserRegister
 from app.utility.database import get_db
-from app.utility.security import hash_email, hash_password, verify_password
+from app.utility.security import hash_email, hash_password, verify_otp, verify_password
 from app.utility.string_utils import sanitize_username
 
 router = APIRouter()
 
+# --- Common utility functions ---
 
-@router.post("/login")
-async def login(data: UserLogin, db: AsyncSession = Depends(get_db)):
-    """Endpoint for user login."""
-    email_hash = hash_email(data.email)
-    password = data.password
 
-    # Verify password
+async def get_password_hash_by_email_hash(
+    db: AsyncSession, email_hash: str
+) -> str | None:
     result = await db.execute(
         text("SELECT get_password_hash_by_email_hash(:email_hash)"),
         {"email_hash": email_hash},
     )
-    password_hash = result.scalar()
+    return result.scalar()
 
-    if not password_hash or not verify_password(password_hash, password):
-        raise HTTPException(401, "Invalid credentials")
 
-    # TODO: Handle 2FA verification here
+async def get_2fa_secret(db: AsyncSession, email_hash: str, method: str = "TOTP"):
+    result = await db.execute(
+        text(
+            "SELECT * FROM get_user_2fa_secret_by_email_hash(:email_hash, :auth_method)"
+        ),
+        {"email_hash": email_hash, "auth_method": method},
+    )
+    return result.fetchone()
 
-    # Retrieve user information
+
+async def get_user_info(db: AsyncSession, email_hash: str):
     result = await db.execute(
         text("SELECT * FROM get_user_info_by_email_hash(:email_hash)"),
         {"email_hash": email_hash},
     )
-    user_info = result.fetchone()
+    return result.fetchone()
 
-    # TODO: Handle user session creation or token generation here and avoid returning sensitive information
+
+# --- Endpoints ---
+
+# Temporary in-memory store for 2FA sessions (replace with Redis or DB in production)
+_2fa_sessions = {}
+
+
+@router.post("/login")
+async def login(data: UserLogin, db: AsyncSession = Depends(get_db)):
+    """Step 1: Verify email and password, check if 2FA is required."""
+    email_hash = hash_email(data.email)
+    password = data.password
+
+    # Verify password
+    password_hash = await get_password_hash_by_email_hash(db, email_hash)
+    if not password_hash or not verify_password(password_hash, password):
+        raise HTTPException(401, "Invalid credentials")
+
+    # Check if 2FA is enabled before fetching user info
+    row = await get_2fa_secret(db, email_hash)
+    user_2fa_secret = row.authentication_secret if row else None
+
+    if user_2fa_secret:
+        temp_token = secrets.token_urlsafe(32)
+
+        # Store mapping with expiry (5 minutes)
+        _2fa_sessions[temp_token] = {
+            "email_hash": email_hash,
+            "expires_at": time.time() + 300,
+        }
+
+        result = await db.execute(
+            text("SELECT * FROM get_user_2fa_methods_by_email_hash(:email_hash)"),
+            {"email_hash": email_hash},
+        )
+        methods_rows = result.fetchall()
+        methods = [row.authentication_method for row in methods_rows]
+        preferred_method = next(
+            (row.authentication_method for row in methods_rows if row.is_preferred),
+            None,
+        )
+
+        if methods:
+            return {
+                "2fa_required": True,
+                "token": temp_token,  # Return token instead of email_hash
+                "methods": methods,
+                "preferred_method": preferred_method,
+            }
+
+    # If 2FA is not enabled, return user info/session
+    user_info = await get_user_info(db, email_hash)
+    return dict(user_info._mapping)
+
+
+@router.post("/login/otp")
+async def login_otp(data: UserLogin2FA, db: AsyncSession = Depends(get_db)):
+    """Step 2: Verify OTP code and return user info/session."""
+    # Validate the temporary session token
+    session = _2fa_sessions.get(data.token)
+
+    if not session or session["expires_at"] < time.time():
+        raise HTTPException(401, "Invalid or expired 2FA session token")
+
+    email_hash = session["email_hash"]
+
+    # Get 2FA secret and method
+    row = await get_2fa_secret(db, email_hash)
+    secret = row.authentication_secret if row else None
+
+    if not secret:
+        raise HTTPException(400, "2FA is not enabled for this user")
+
+    if not verify_otp(secret, data.otp_code):
+        raise HTTPException(401, "Invalid 2FA code")
+
+    # Return user info/session
+    user_info = await get_user_info(db, email_hash)
     return dict(user_info._mapping)
 
 
@@ -48,16 +132,19 @@ async def register(data: UserRegister, db: AsyncSession = Depends(get_db)):
     username = sanitize_username(data.username)
     password_hash = hash_password(data.password)
     language_id = data.language_id
+    otp_secret = generate_otp_secret()
 
     if not token:
         raise HTTPException(400, "Token is required for registration")
 
-    # Check if the token exists in pending_users
+    # Check if the token exists and is valid using the new function
     result = await db.execute(
-        text("SELECT 1 FROM pending_users WHERE verification_token = :token"),
+        text("SELECT is_verification_token_valid(:token)"),
         {"token": token},
     )
-    if not result.scalar():
+    is_valid = result.scalar()
+
+    if not is_valid:
         raise HTTPException(400, "Invalid or expired verification token")
 
     # Retrieve the list of discriminators for the username
@@ -91,7 +178,8 @@ async def register(data: UserRegister, db: AsyncSession = Depends(get_db)):
                 :username,
                 :discriminator,
                 :password_hash,
-                :preferred_language_id
+                :preferred_language_id,
+                :otp_secret
             )
             """
         ),
@@ -101,6 +189,7 @@ async def register(data: UserRegister, db: AsyncSession = Depends(get_db)):
             "discriminator": discriminator,
             "password_hash": password_hash,
             "preferred_language_id": language_id,
+            "otp_secret": otp_secret,
         },
     )
     await db.commit()

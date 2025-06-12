@@ -3,6 +3,7 @@ import hashlib
 import os
 import secrets
 
+import pyotp
 from argon2 import PasswordHasher
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
@@ -53,6 +54,20 @@ def hash_password(password: str) -> str:
     """Hash a password using Argon2 + pepper."""
     peppered_password = password.encode("utf-8") + PEPPER
     return ph.hash(peppered_password)
+
+
+def verify_otp(secret: str, otp_code: str, otp_method: str = "TOTP") -> bool:
+    """Verify a one-time password (OTP) against a secret using TOTP or HOTP."""
+    try:
+        match otp_method:
+            case "TOTP":
+                return pyotp.TOTP(secret).verify(otp_code)
+            case "HOTP":
+                return pyotp.HOTP(secret).verify(otp_code)
+            case _:
+                raise ValueError("Unsupported OTP method")
+    except Exception:
+        return False
 
 
 def verify_password(hashed_password: str, password: str) -> bool:
