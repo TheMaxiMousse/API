@@ -1,3 +1,9 @@
+"""
+string_utils.py
+
+Utility functions for string manipulation and sanitization used throughout the API application.
+"""
+
 import re
 
 
