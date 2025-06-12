@@ -8,7 +8,7 @@
             "presentation": {
                 "showReuseMessage": false
             },
-            "problemMatcher": [],
+            "problemMatcher": []
         },
         {
             "label": "Package app",
@@ -21,7 +21,7 @@
             "presentation": {
                 "panel": "dedicated"
             },
-            "problemMatcher": [],
+            "problemMatcher": []
         },
         {
             "label": "Run all tests",
@@ -43,7 +43,7 @@
             "presentation": {
                 "close": true
             },
-            "problemMatcher": [],
+            "problemMatcher": []
         },
         {
             "label": "Start FastAPI server",
@@ -53,7 +53,7 @@
                 "panel": "dedicated",
                 "close": true
             },
-            "problemMatcher": [],
+            "problemMatcher": []
         }
     ]
 }

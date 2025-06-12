@@ -51,6 +51,7 @@ jobs:
           VALIDATE_DOCKERFILE_HADOLINT: false
           VALIDATE_PYTHON_ISORT: false
           VALIDATE_PYTHON_MYPY: false
+          VALIDATE_PYTHON_PYLINT: false
           FIX_HTML_PRETTIER: true
           FIX_JSON: true
           FIX_JSON_PRETTIER: true

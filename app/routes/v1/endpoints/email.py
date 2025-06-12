@@ -10,9 +10,10 @@ from fastapi import APIRouter, BackgroundTasks, Depends
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.routes.v1.schemas.email import EmailRequest
+from app.routes.v1.schemas.email.request import EmailRequest
 from app.utility.database import get_db
-from app.utility.email import RegistrationEmailSchema, send_email_background
+from app.utility.email.schemas import RegistrationEmailSchema
+from app.utility.email.sender import send_email_background
 from app.utility.security import create_verification_token, encrypt_email, hash_email
 
 router = APIRouter()

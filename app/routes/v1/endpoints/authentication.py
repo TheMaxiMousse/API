@@ -15,7 +15,8 @@ from pyotp import random_base32 as generate_otp_secret
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.routes.v1.schemas.user import UserLogin, UserLogin2FA, UserRegister
+from app.routes.v1.schemas.user.login import UserLogin, UserLogin2FA
+from app.routes.v1.schemas.user.register import UserRegister
 from app.utility.database import get_db
 from app.utility.security import hash_email, hash_password, verify_otp, verify_password
 from app.utility.string_utils import sanitize_username
