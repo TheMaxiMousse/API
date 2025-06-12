@@ -189,5 +189,5 @@ cython_debug/
 .cursorindexingignore
 
 # # Super Linter output
-# github_conf/branch_protection_rules.json
-# super-linter-output/super-linter-summary.md
+github_conf/branch_protection_rules.json
+super-linter-output/super-linter-summary.md
