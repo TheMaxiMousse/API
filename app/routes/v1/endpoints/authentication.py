@@ -1,3 +1,11 @@
+"""
+Authentication endpoints and utilities for user login, registration, and 2FA.
+
+This module provides FastAPI endpoints for user authentication, including login,
+two-factor authentication (2FA), and registration. It also includes utility
+functions for interacting with the database and handling authentication logic.
+"""
+
 import random
 import secrets
 import time
@@ -24,6 +32,16 @@ _2fa_sessions = (
 async def get_password_hash_by_email_hash(
     db: AsyncSession, email_hash: str
 ) -> str | None:
+    """
+    Retrieve the password hash for a user by their email hash.
+
+    Args:
+        db (AsyncSession): The database session.
+        email_hash (str): The hashed email address.
+
+    Returns:
+        str | None: The password hash if found, otherwise None.
+    """
     result = await db.execute(
         text("SELECT get_password_hash_by_email_hash(:email_hash)"),
         {"email_hash": email_hash},
@@ -32,6 +50,17 @@ async def get_password_hash_by_email_hash(
 
 
 async def get_2fa_secret(db: AsyncSession, email_hash: str, method: str = "TOTP"):
+    """
+    Retrieve the 2FA secret for a user by their email hash and authentication method.
+
+    Args:
+        db (AsyncSession): The database session.
+        email_hash (str): The hashed email address.
+        method (str): The authentication method (default: "TOTP").
+
+    Returns:
+        Row or None: The database row containing the 2FA secret, or None if not found.
+    """
     result = await db.execute(
         text(
             "SELECT * FROM get_user_2fa_secret_by_email_hash(:email_hash, :auth_method)"
@@ -42,6 +71,16 @@ async def get_2fa_secret(db: AsyncSession, email_hash: str, method: str = "TOTP"
 
 
 async def get_user_info(db: AsyncSession, email_hash: str):
+    """
+    Retrieve user information by their email hash.
+
+    Args:
+        db (AsyncSession): The database session.
+        email_hash (str): The hashed email address.
+
+    Returns:
+        Row or None: The database row containing user information, or None if not found.
+    """
     result = await db.execute(
         text("SELECT * FROM get_user_info_by_email_hash(:email_hash)"),
         {"email_hash": email_hash},
@@ -54,7 +93,19 @@ async def get_user_info(db: AsyncSession, email_hash: str):
 
 @router.post("/login")
 async def login(data: UserLogin, db: AsyncSession = Depends(get_db)):
-    """Step 1: Verify email and password, check if 2FA is required."""
+    """
+    Step 1: Verify email and password, check if 2FA is required.
+
+    Args:
+        data (UserLogin): The login request payload.
+        db (AsyncSession): The database session.
+
+    Returns:
+        dict: If 2FA is required, returns a dict with 2FA info and a temporary token.
+              Otherwise, returns user info/session.
+    Raises:
+        HTTPException: If credentials are invalid.
+    """
     email_hash = hash_email(data.email)
     password = data.password
 
@@ -102,7 +153,18 @@ async def login(data: UserLogin, db: AsyncSession = Depends(get_db)):
 
 @router.post("/login/otp")
 async def login_otp(data: UserLogin2FA, db: AsyncSession = Depends(get_db)):
-    """Step 2: Verify OTP code and return user info/session."""
+    """
+    Step 2: Verify OTP code and return user info/session.
+
+    Args:
+        data (UserLogin2FA): The 2FA login request payload.
+        db (AsyncSession): The database session.
+
+    Returns:
+        dict: User info/session if OTP is valid.
+    Raises:
+        HTTPException: If the session token is invalid/expired, 2FA is not enabled, or OTP is invalid.
+    """
     # Validate the temporary session token
     session = _2fa_sessions.get(data.token)
 
@@ -128,7 +190,18 @@ async def login_otp(data: UserLogin2FA, db: AsyncSession = Depends(get_db)):
 
 @router.post("/register")
 async def register(data: UserRegister, db: AsyncSession = Depends(get_db)):
-    """Endpoint for user registration."""
+    """
+    Endpoint for user registration.
+
+    Args:
+        data (UserRegister): The registration request payload.
+        db (AsyncSession): The database session.
+
+    Returns:
+        dict: Registration result with username and discriminator.
+    Raises:
+        HTTPException: If the token is missing/invalid, all discriminators are taken, or email exists.
+    """
     token = data.token
     username = sanitize_username(data.username)
     password_hash = hash_password(data.password)
