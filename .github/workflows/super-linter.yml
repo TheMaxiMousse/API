@@ -2,7 +2,7 @@
 name: Lint
 
 permissions:
-  contents: read
+  contents: write
   packages: read
   statuses: write
 
