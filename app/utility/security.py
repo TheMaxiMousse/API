@@ -92,7 +92,9 @@ def hash_password(password: str) -> str:
     return ph.hash(peppered_password)
 
 
-def verify_otp(secret: str, otp_code: str, otp_method: str = "TOTP") -> bool:
+def verify_otp(
+    secret: str, otp_code: str, otp_method: str = "TOTP", counter: int = 0
+) -> bool:
     """
     Verify a one-time password (OTP) against a secret using TOTP or HOTP.
 
@@ -100,6 +102,7 @@ def verify_otp(secret: str, otp_code: str, otp_method: str = "TOTP") -> bool:
         secret (str): The OTP secret.
         otp_code (str): The OTP code to verify.
         otp_method (str): The OTP method ("TOTP" or "HOTP").
+        counter (int): The HOTP counter (required for HOTP).
 
     Returns:
         bool: True if the OTP is valid, False otherwise.
@@ -109,7 +112,7 @@ def verify_otp(secret: str, otp_code: str, otp_method: str = "TOTP") -> bool:
             case "TOTP":
                 return pyotp.TOTP(secret).verify(otp_code)
             case "HOTP":
-                return pyotp.HOTP(secret).verify(otp_code)
+                return pyotp.HOTP(secret).verify(otp_code, counter)
             case _:
                 raise ValueError("Unsupported OTP method")
     except Exception:
