@@ -62,4 +62,4 @@ async def send_confirmation_email(
     )
     await db.commit()
 
-    return {"detail": "Confirmation email sent", "confirmation_token": token}
+    return {"detail": "Confirmation email sent"}

@@ -72,7 +72,6 @@ async def test_send_confirmation_email_success(
     assert response.status_code == 200
     data = response.json()
     assert data["detail"] == "Confirmation email sent"
-    assert data["confirmation_token"] == "test-token"
 
     patch_email_dependencies["token"].assert_called_once()
     patch_email_dependencies["enc"].assert_called_once_with(email)
