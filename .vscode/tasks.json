@@ -34,14 +34,11 @@
             "problemMatcher": []
         },
         {
-            "label": "Run on test file",
+            "label": "Run file tests",
             "type": "shell",
-            "command": "python3 -m pytest '${relativeFile}' -v -x",
+            "command": "python3 -m pytest '${file}' -v -x",
             "group": {
                 "kind": "test"
-            },
-            "presentation": {
-                "close": true
             },
             "problemMatcher": []
         },
