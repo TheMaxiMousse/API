@@ -32,6 +32,15 @@ def test_encrypt_field_type(encrypted_email, encrypted_phone):
     assert encrypted_phone.isascii()
 
 
+def test_encrypt_field_length(encrypted_email, encrypted_phone):
+    """
+    Test that the encrypted fields are not empty.
+    This ensures that the encryption does not produce empty strings.
+    """
+    assert len(encrypted_email) > 0
+    assert len(encrypted_phone) > 0
+
+
 def test_encrypt_field_format(encrypted_email, encrypted_phone):
     """
     Test that the encrypted fields are in the expected format.
