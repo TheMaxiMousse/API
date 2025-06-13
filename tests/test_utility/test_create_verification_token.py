@@ -7,10 +7,7 @@ from app.utility.security import create_verification_token
 
 @pytest.fixture
 def verification_token():
-    """
-    Fixture to provide a verification token for testing.
-    This can be used in tests that require a token.
-    """
+    """Fixture to provide a verification token for testing."""
     return create_verification_token()
 
 

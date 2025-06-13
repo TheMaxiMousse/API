@@ -7,19 +7,13 @@ from app.utility.security import decrypt_field, encrypt_email, encrypt_phone
 
 @pytest.fixture
 def encrypted_email(sample_email):
-    """
-    Fixture to provide an encrypted email for testing.
-    This can be used in tests that require an encrypted email.
-    """
+    """Fixture to provide an encrypted email for testing."""
     return encrypt_email(sample_email)
 
 
 @pytest.fixture
 def encrypted_phone(sample_phone):
-    """
-    Fixture to provide an encrypted phone number for testing.
-    This can be used in tests that require an encrypted phone number.
-    """
+    """Fixture to provide an encrypted phone number for testing."""
     return encrypt_phone(sample_phone)
 
 

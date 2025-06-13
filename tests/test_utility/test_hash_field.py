@@ -7,19 +7,13 @@ from app.utility.security import hash_email, hash_phone
 
 @pytest.fixture
 def hashed_email(sample_email):
-    """
-    Fixture to provide a hashed email for testing.
-    This can be used in tests that require a hashed email.
-    """
+    """Fixture to provide a hashed email for testing."""
     return hash_email(sample_email)
 
 
 @pytest.fixture
 def hashed_phone(sample_phone):
-    """
-    Fixture to provide a hashed phone number for testing.
-    This can be used in tests that require a hashed phone number.
-    """
+    """Fixture to provide a hashed phone number for testing."""
     return hash_phone(sample_phone)
 
 

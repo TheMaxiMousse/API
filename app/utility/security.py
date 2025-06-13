@@ -119,7 +119,7 @@ def verify_otp(
         return False
 
 
-def verify_password(hashed_password: str, password: str) -> bool:
+def verify_password(password: str, hashed_password: str) -> bool:
     """
     Verify a password against a hashed password.
 

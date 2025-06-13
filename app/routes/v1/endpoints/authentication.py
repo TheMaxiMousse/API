@@ -112,7 +112,7 @@ async def login(data: UserLogin, db: AsyncSession = Depends(get_db)):
 
     # Verify password
     password_hash = await get_password_hash_by_email_hash(db, email_hash)
-    if not password_hash or not verify_password(password_hash, password):
+    if not password_hash or not verify_password(password, password_hash):
         raise HTTPException(401, "Invalid credentials")
 
     # Check if 2FA is enabled before fetching user info
