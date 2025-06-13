@@ -32,6 +32,15 @@ def test_hash_field_type(hashed_email, hashed_phone):
     assert isinstance(hashed_phone, str)
 
 
+def test_hash_field_length(hashed_email, hashed_phone):
+    """
+    Test that the hashed fields are precisely 64 characters long.
+    This is the expected length for SHA-256 hashes.
+    """
+    assert len(hashed_email) == 64
+    assert len(hashed_phone) == 64
+
+
 def test_hash_field_format(hashed_email, hashed_phone):
     """
     Test that the hashed fields are in the expected format.
