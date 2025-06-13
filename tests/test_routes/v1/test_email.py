@@ -53,6 +53,7 @@ def mock_db_and_override(client):
     "email",
     [
         "user@example.com",
+        "USER@domain.io",
         "test.user+alias@domain.co.uk",
         "first.last@sub.domain.com",
         "user123@domain.io",

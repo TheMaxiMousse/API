@@ -49,3 +49,36 @@ def v2_get(client: TestClient, path: str) -> TestClient:
         Response: FastAPI test client response.
     """
     return api_get(client, "v2", path)
+
+
+def api_post(client: TestClient, version: str, path: str, *args, **kwargs):
+    """
+    Perform a POST request to a versioned API path.
+
+    Args:
+        client (TestClient): FastAPI test client.
+        version (str): API version, e.g., 'v1' or 'v2'.
+        path (str): Path to append after the version, e.g., '/orders'.
+        *args: Variable length argument list.
+        **kwargs: Arbitrary keyword arguments.
+
+    Returns:
+        Response: FastAPI test client response.
+    """
+    return client.post(f"/api/{version}{path}", *args, **kwargs)
+
+
+def v1_post(client: TestClient, path: str, *args, **kwargs):
+    """
+    Perform a POST request to a v1 API endpoint.
+
+    Args:
+        client (TestClient): FastAPI test client.
+        path (str): Path to append after `/api/v1`.
+        *args: Variable length argument list.
+        **kwargs: Arbitrary keyword arguments.
+
+    Returns:
+        Response: FastAPI test client response.
+    """
+    return api_post(client, "v1", path, *args, **kwargs)

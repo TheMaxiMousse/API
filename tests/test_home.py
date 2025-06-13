@@ -2,14 +2,8 @@
 Test the home endpoint of the API.
 """
 
-from fastapi.testclient import TestClient
 
-from app.main import app
-
-client = TestClient(app)
-
-
-def test_home():
+def test_home(client):
     """Test the home endpoint."""
     response = client.get("/")
     assert response.status_code == 200

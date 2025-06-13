@@ -32,32 +32,6 @@ def create_verification_token() -> str:
     return secrets.token_urlsafe(32)
 
 
-def normalize_email(email: str) -> str:
-    """
-    Normalize email by stripping spaces and converting to lowercase.
-
-    Args:
-        email (str): The email address to normalize.
-
-    Returns:
-        str: The normalized email address.
-    """
-    return email.strip().lower()
-
-
-def normalize_phone(phone: str) -> str:
-    """
-    Normalize phone number by stripping spaces and removing non-numeric characters.
-
-    Args:
-        phone (str): The phone number to normalize.
-
-    Returns:
-        str: The normalized phone number.
-    """
-    return phone.strip().replace(" ", "")
-
-
 def encrypt_field(value: str) -> str:
     """
     Encrypt a value using AES-256-GCM.
@@ -162,33 +136,33 @@ def verify_password(hashed_password: str, password: str) -> bool:
 
 def hash_email(email: str) -> str:
     """
-    Generate a SHA-256 hash of the normalized email (used for fast lookup).
+    Generate a SHA-256 hash of the email (used for fast lookup).
 
     Args:
         email (str): The email address.
 
     Returns:
-        str: The SHA-256 hash of the normalized email.
+        str: The SHA-256 hash of the email.
     """
-    return hash_field(normalize_email(email))
+    return hash_field(email)
 
 
 def hash_phone(phone: str) -> str:
     """
-    Generate a SHA-256 hash of the normalized phone number (used for fast lookup).
+    Generate a SHA-256 hash of the phone number (used for fast lookup).
 
     Args:
         phone (str): The phone number.
 
     Returns:
-        str: The SHA-256 hash of the normalized phone number.
+        str: The SHA-256 hash of the phone number.
     """
-    return hash_field(normalize_phone(phone))
+    return hash_field(phone)
 
 
 def encrypt_email(email: str) -> str:
     """
-    Encrypt the normalized email address.
+    Encrypt the email address.
 
     Args:
         email (str): The email address to encrypt.
@@ -196,7 +170,7 @@ def encrypt_email(email: str) -> str:
     Returns:
         str: The encrypted email.
     """
-    return encrypt_field(normalize_email(email))
+    return encrypt_field(email)
 
 
 def encrypt_phone(phone: str) -> str:
@@ -209,4 +183,4 @@ def encrypt_phone(phone: str) -> str:
     Returns:
         str: The encrypted phone number.
     """
-    return encrypt_field(normalize_phone(phone))
+    return encrypt_field(phone)

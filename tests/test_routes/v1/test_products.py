@@ -6,13 +6,10 @@ This module uses the `v1_get` utility to avoid repeating the API version path.
 
 from fastapi.testclient import TestClient
 
-from app.main import app
 from tests.utils.request import v1_get
 
-client = TestClient(app)
 
-
-def test_products():
+def test_products(client: TestClient):
     """
     Test that the `/api/v1/products` endpoint returns a 200 status
     and responds with a JSON list.
