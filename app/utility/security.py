@@ -22,6 +22,15 @@ AES_KEY = bytes.fromhex(os.getenv("AES_SECRET_KEY", os.urandom(32).hex()))
 PEPPER = os.getenv("PEPPER", "SuperSecretPepper").encode("utf-8")
 
 
+def create_token(length: int) -> str:
+    """
+    Generate a secure random token for session management.
+    Returns:
+        str: A URL-safe, random token string.
+    """
+    return secrets.token_urlsafe(length)
+
+
 def create_verification_token() -> str:
     """
     Generate a secure random token for email verification.
@@ -29,7 +38,27 @@ def create_verification_token() -> str:
     Returns:
         str: A URL-safe, random token string.
     """
-    return secrets.token_urlsafe(32)
+    return create_token(32)
+
+
+def create_access_token() -> str:
+    """
+    Generate a secure random token for access control.
+
+    Returns:
+        str: A URL-safe, random token string.
+    """
+    return create_token(32)
+
+
+def create_refresh_token() -> str:
+    """
+    Generate a secure random token for refresh operations.
+
+    Returns:
+        str: A URL-safe, random token string.
+    """
+    return create_token(64)
 
 
 def encrypt_field(value: str) -> str:
@@ -161,6 +190,19 @@ def hash_phone(phone: str) -> str:
         str: The SHA-256 hash of the phone number.
     """
     return hash_field(phone)
+
+
+def hash_token(token: str) -> str:
+    """
+    Generate a SHA-256 hash of the token (used for fast lookup).
+
+    Args:
+        token (str): The token to hash.
+
+    Returns:
+        str: The SHA-256 hash of the token.
+    """
+    return hash_field(token)
 
 
 def encrypt_email(email: str) -> str:

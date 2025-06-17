@@ -6,14 +6,17 @@ two-factor authentication (2FA), and registration. It also includes utility
 functions for interacting with the database and handling authentication logic.
 """
 
+import json
 import random
 import secrets
 import time
+from urllib import request
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pyotp import random_base32 as generate_otp_secret
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
+from user_agents import parse as parse_user_agent
 
 from app.routes.v1.schemas.user.login import UserLogin, UserLogin2FA
 from app.routes.v1.schemas.user.register import UserRegister
@@ -89,11 +92,97 @@ async def get_user_info(db: AsyncSession, email_hash: str):
     return result.fetchone()
 
 
+async def save_session_token(
+    db: AsyncSession,
+    user_id: int,
+    session_token: str,
+    device_info: str,
+    ip_address: str,
+):
+    """
+    Save a session token for a user with device and IP info.
+
+    Args:
+        db (AsyncSession): The database session.
+        user_id (int): The user's ID.
+        session_token (str): The session token to save.
+        device_info (str): Information about the user's device.
+        ip_address (str): The user's IP address.
+    """
+    await db.execute(
+        text(
+            """
+            CALL create_user_session_token(
+                :p_user_id,
+                :p_session_token,
+                :p_device_info,
+                :p_ip_address
+            )
+            """
+        ),
+        {
+            "p_user_id": user_id,
+            "p_session_token": session_token,
+            "p_device_info": device_info,
+            "p_ip_address": ip_address,
+        },
+    )
+    await db.commit()
+
+
+async def save_refresh_token(
+    db: AsyncSession,
+    user_id: int,
+    session_token: str,
+    device_info: str,
+    ip_address: str,
+):
+    """
+    Save a session token for a user with device and IP info.
+
+    Args:
+        db (AsyncSession): The database session.
+        user_id (int): The user's ID.
+        session_token (str): The session token to save.
+        device_info (str): Information about the user's device.
+        ip_address (str): The user's IP address.
+    """
+    await db.execute(
+        text(
+            """
+            CALL create_user_refresh_token(
+                :p_user_id,
+                :p_session_token,
+                :p_device_info,
+                :p_ip_address
+            )
+            """
+        ),
+        {
+            "p_user_id": user_id,
+            "p_session_token": session_token,
+            "p_device_info": device_info,
+            "p_ip_address": ip_address,
+        },
+    )
+    await db.commit()
+
+
+async def delete_refresh_token():
+    """Delete a refresh token for a user"""
+    # TODO
+
+
+async def delete_access_token():
+    """Delete an access token for a user"""
+    # TODO
+
+
 # --- Endpoints ---
 
 
 @router.post("/login")
-async def login(data: UserLogin, db: AsyncSession = Depends(get_db)):
+async def login(data: UserLogin, request: Request, db: AsyncSession = Depends(get_db)):
     """
     Step 1: Verify email and password, check if 2FA is required.
 
@@ -109,6 +198,25 @@ async def login(data: UserLogin, db: AsyncSession = Depends(get_db)):
     """
     email_hash = hash_email(data.email)
     password = data.password
+
+    # Parse user agent for device info
+    client_ip = request.client.host
+    forwarded_ip = request.headers.get("X-Forwarded-For")
+    ip_address = request.headers.get("X-Real-IP") or request.client.host
+    user_agent_str = request.headers.get("User-Agent", "")
+    user_agent = parse_user_agent(user_agent_str)
+
+    device_info = {
+        "os": user_agent.os.family,
+        "os_version": user_agent.os.version_string,
+        "browser": user_agent.browser.family,
+        "browser_version": user_agent.browser.version_string,
+        "device": user_agent.device.family,
+        "is_mobile": user_agent.is_mobile,
+        "is_tablet": user_agent.is_tablet,
+        "is_pc": user_agent.is_pc,
+        "is_bot": user_agent.is_bot,
+    }
 
     # Verify password
     password_hash = await get_password_hash_by_email_hash(db, email_hash)
@@ -147,9 +255,32 @@ async def login(data: UserLogin, db: AsyncSession = Depends(get_db)):
                 "preferred_method": preferred_method,
             }
 
-    # If 2FA is not enabled, return user info/session
     user_info = await get_user_info(db, email_hash)
-    return dict(user_info._mapping)
+
+    # After user_info = await get_user_info(db, email_hash)
+    session_token = secrets.token_urlsafe(32)
+    refresh_token = secrets.token_urlsafe(32)
+
+    await save_session_token(
+        db,
+        user_info.user_id,
+        session_token,
+        json.dumps(device_info),
+        ip_address,
+    )
+    await save_refresh_token(
+        db,
+        user_info.user_id,
+        refresh_token,
+        json.dumps(device_info),
+        ip_address,
+    )
+
+    return {
+        **dict(user_info._mapping),
+        "session_token": session_token,
+        "refresh_token": refresh_token,
+    }
 
 
 @router.post("/login/otp")
@@ -184,9 +315,26 @@ async def login_otp(data: UserLogin2FA, db: AsyncSession = Depends(get_db)):
     if not verify_otp(secret, data.otp_code):
         raise HTTPException(401, "Invalid 2FA code")
 
-    # Return user info/session
     user_info = await get_user_info(db, email_hash)
-    return dict(user_info._mapping)
+
+    session_token = await save_session_token(
+        db,
+        user_info.id,
+        data.device_info,
+        data.ip_address,
+    )
+    refresh_token = await save_refresh_token(
+        db,
+        user_info.id,
+        data.device_info,
+        data.ip_address,
+    )
+
+    return {
+        **dict(user_info._mapping),
+        "session_token": session_token,
+        "refresh_token": refresh_token,
+    }
 
 
 @router.post("/register")

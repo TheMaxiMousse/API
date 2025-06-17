@@ -5,7 +5,9 @@ dotenv>=0.9.9
 fastapi>=0.115.12
 fastapi_mail>=1.5.0
 httpx>=0.28.1
-pydantic[email]
+pydantic[email]>=2.11.6
 pyotp>=2.9.0
+requests>=2.32.4
 sqlalchemy>=2.0.41
+user-agents>=2.2.0
 uvicorn>=0.34.2
