@@ -178,6 +178,50 @@ async def delete_access_token():
     # TODO
 
 
+def get_device_info_and_ip(request: Request):
+    """Extract device info and IP address from the request."""
+    user_agent_str = request.headers.get("User-Agent", "")
+    ua = parse_user_agent(user_agent_str)
+    device_info = json.dumps(
+        {
+            "family": ua.device.family,
+            "brand": ua.device.brand,
+            "model": ua.device.model,
+            "is_mobile": ua.is_mobile,
+            "is_tablet": ua.is_tablet,
+            "is_pc": ua.is_pc,
+            "is_bot": ua.is_bot,
+        }
+    )
+    ip_address = request.headers.get("X-Real-IP") or request.client.host
+    return device_info, ip_address
+
+
+async def create_and_return_session(db, user_info, device_info, ip_address):
+    """Create session and refresh tokens, save them, and return user info with tokens."""
+    session_token = secrets.token_urlsafe(32)
+    refresh_token = secrets.token_urlsafe(32)
+    await save_session_token(
+        db,
+        user_info.user_id,
+        session_token,
+        device_info,
+        ip_address,
+    )
+    await save_refresh_token(
+        db,
+        user_info.user_id,
+        refresh_token,
+        device_info,
+        ip_address,
+    )
+    return {
+        **dict(user_info._mapping),
+        "session_token": session_token,
+        "refresh_token": refresh_token,
+    }
+
+
 # --- Endpoints ---
 
 
@@ -200,22 +244,7 @@ async def login(data: UserLogin, request: Request, db: AsyncSession = Depends(ge
     password = data.password
 
     # Parse user agent for device info
-    client_ip = request.client.host
-    forwarded_ip = request.headers.get("X-Forwarded-For")
-    ip_address = request.headers.get("X-Real-IP") or request.client.host
-    user_agent_str = request.headers.get("User-Agent", "")
-    ua = parse_user_agent(user_agent_str)
-    device_info = json.dumps(
-        {
-            "family": ua.device.family,
-            "brand": ua.device.brand,
-            "model": ua.device.model,
-            "is_mobile": ua.is_mobile,
-            "is_tablet": ua.is_tablet,
-            "is_pc": ua.is_pc,
-            "is_bot": ua.is_bot,
-        }
-    )
+    device_info, ip_address = get_device_info_and_ip(request)
 
     # Verify password
     password_hash = await get_password_hash_by_email_hash(db, email_hash)
@@ -249,7 +278,7 @@ async def login(data: UserLogin, request: Request, db: AsyncSession = Depends(ge
         if methods:
             return {
                 "2fa_required": True,
-                "token": temp_token,  # Return token instead of email_hash
+                "token": temp_token,
                 "methods": methods,
                 "preferred_method": preferred_method,
             }
