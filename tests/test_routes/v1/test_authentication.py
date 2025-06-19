@@ -191,9 +191,7 @@ async def test_login_invalid_credentials(
 
 
 @pytest.mark.asyncio
-async def test_login_missing_fields(
-    client, mock_db_and_override, patch_auth_dependencies
-):
+async def test_login_missing_fields(client, mock_db_and_override):
     """
     Test login with missing fields returns 422 and no tokens.
     """
@@ -241,9 +239,7 @@ async def test_login_otp_success_returns_tokens(
 
 
 @pytest.mark.asyncio
-async def test_login_otp_invalid_token(
-    client, mock_db_and_override, patch_auth_dependencies, otp_payload
-):
+async def test_login_otp_invalid_token(client, otp_payload):
     """
     Test /login/otp with an invalid or expired token returns 401.
     """
@@ -258,9 +254,7 @@ async def test_login_otp_invalid_token(
 
 
 @pytest.mark.asyncio
-async def test_login_otp_invalid_otp(
-    client, mock_db_and_override, patch_auth_dependencies, otp_payload
-):
+async def test_login_otp_invalid_otp(client, patch_auth_dependencies, otp_payload):
     """
     Test /login/otp with an invalid OTP code returns 401.
     """
