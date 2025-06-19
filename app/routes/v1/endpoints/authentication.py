@@ -10,7 +10,6 @@ import json
 import random
 import secrets
 import time
-from urllib import request
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pyotp import random_base32 as generate_otp_secret
@@ -172,16 +171,6 @@ async def save_refresh_token(
         },
     )
     await db.commit()
-
-
-async def delete_refresh_token():
-    """Delete a refresh token for a user"""
-    # TODO
-
-
-async def delete_access_token():
-    """Delete an access token for a user"""
-    # TODO
 
 
 def get_device_info_and_ip(request: Request):
