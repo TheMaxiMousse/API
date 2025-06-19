@@ -73,17 +73,10 @@ def mock_db_and_override(client):
 def login_payload():
     """Returns a function to generate login payloads."""
 
-    def _payload(
-        email="testuser",
-        password="password123",
-        ip_address="127.0.0.1",
-        device_info="test-device",
-    ):
+    def _payload(email="testuser", password="password123"):
         return {
             "email": email,
             "password": password,
-            "ip_address": ip_address,
-            "device_info": device_info,
         }
 
     return _payload
@@ -93,17 +86,10 @@ def login_payload():
 def otp_payload():
     """Returns a function to generate OTP login payloads."""
 
-    def _payload(
-        token="validtoken",
-        otp_code=123456,
-        ip_address="127.0.0.1",
-        device_info="test-device",
-    ):
+    def _payload(token="validtoken", otp_code=123456):
         return {
             "token": token,
             "otp_code": otp_code,
-            "ip_address": ip_address,
-            "device_info": device_info,
         }
 
     return _payload

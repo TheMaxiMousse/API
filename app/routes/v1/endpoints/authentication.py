@@ -204,19 +204,16 @@ async def login(data: UserLogin, request: Request, db: AsyncSession = Depends(ge
     forwarded_ip = request.headers.get("X-Forwarded-For")
     ip_address = request.headers.get("X-Real-IP") or request.client.host
     user_agent_str = request.headers.get("User-Agent", "")
-    user_agent = parse_user_agent(user_agent_str)
-
+    ua = parse_user_agent(user_agent_str)
     device_info = json.dumps(
         {
-            "os": user_agent.os.family,
-            "os_version": user_agent.os.version_string,
-            "browser": user_agent.browser.family,
-            "browser_version": user_agent.browser.version_string,
-            "device": user_agent.device.family,
-            "is_mobile": user_agent.is_mobile,
-            "is_tablet": user_agent.is_tablet,
-            "is_pc": user_agent.is_pc,
-            "is_bot": user_agent.is_bot,
+            "family": ua.device.family,
+            "brand": ua.device.brand,
+            "model": ua.device.model,
+            "is_mobile": ua.is_mobile,
+            "is_tablet": ua.is_tablet,
+            "is_pc": ua.is_pc,
+            "is_bot": ua.is_bot,
         }
     )
 
@@ -285,7 +282,9 @@ async def login(data: UserLogin, request: Request, db: AsyncSession = Depends(ge
 
 
 @router.post("/login/otp")
-async def login_otp(data: UserLogin2FA, db: AsyncSession = Depends(get_db)):
+async def login_otp(
+    data: UserLogin2FA, request: Request, db: AsyncSession = Depends(get_db)
+):
     """
     Step 2: Verify OTP code and return user info/session.
 
@@ -298,6 +297,21 @@ async def login_otp(data: UserLogin2FA, db: AsyncSession = Depends(get_db)):
     Raises:
         HTTPException: If the session token is invalid/expired, 2FA is not enabled, or OTP is invalid.
     """
+    user_agent_str = request.headers.get("User-Agent", "")
+    ua = parse_user_agent(user_agent_str)
+    device_info = json.dumps(
+        {
+            "family": ua.device.family,
+            "brand": ua.device.brand,
+            "model": ua.device.model,
+            "is_mobile": ua.is_mobile,
+            "is_tablet": ua.is_tablet,
+            "is_pc": ua.is_pc,
+            "is_bot": ua.is_bot,
+        }
+    )
+    ip_address = request.headers.get("X-Real-IP") or request.client.host
+
     # Validate the temporary session token
     session = _2fa_sessions.get(data.token)
 
@@ -324,15 +338,15 @@ async def login_otp(data: UserLogin2FA, db: AsyncSession = Depends(get_db)):
         db,
         user_info.user_id,
         session_token,
-        data.device_info,
-        data.ip_address,
+        device_info,
+        ip_address,
     )
     await save_refresh_token(
         db,
         user_info.user_id,
         refresh_token,
-        data.device_info,
-        data.ip_address,
+        device_info,
+        ip_address,
     )
     return {
         **dict(user_info._mapping),

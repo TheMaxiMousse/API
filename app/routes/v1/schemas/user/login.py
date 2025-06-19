@@ -19,8 +19,6 @@ class UserLogin(BaseModel):
 
     email: str
     password: str
-    device_info: str | None = None
-    ip_address: str
 
 
 class UserLogin2FA(BaseModel):
@@ -34,5 +32,3 @@ class UserLogin2FA(BaseModel):
 
     otp_code: int
     token: str
-    device_info: str | None = None
-    ip_address: str
