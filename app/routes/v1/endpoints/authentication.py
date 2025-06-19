@@ -206,17 +206,19 @@ async def login(data: UserLogin, request: Request, db: AsyncSession = Depends(ge
     user_agent_str = request.headers.get("User-Agent", "")
     user_agent = parse_user_agent(user_agent_str)
 
-    device_info = {
-        "os": user_agent.os.family,
-        "os_version": user_agent.os.version_string,
-        "browser": user_agent.browser.family,
-        "browser_version": user_agent.browser.version_string,
-        "device": user_agent.device.family,
-        "is_mobile": user_agent.is_mobile,
-        "is_tablet": user_agent.is_tablet,
-        "is_pc": user_agent.is_pc,
-        "is_bot": user_agent.is_bot,
-    }
+    device_info = json.dumps(
+        {
+            "os": user_agent.os.family,
+            "os_version": user_agent.os.version_string,
+            "browser": user_agent.browser.family,
+            "browser_version": user_agent.browser.version_string,
+            "device": user_agent.device.family,
+            "is_mobile": user_agent.is_mobile,
+            "is_tablet": user_agent.is_tablet,
+            "is_pc": user_agent.is_pc,
+            "is_bot": user_agent.is_bot,
+        }
+    )
 
     # Verify password
     password_hash = await get_password_hash_by_email_hash(db, email_hash)
@@ -240,7 +242,7 @@ async def login(data: UserLogin, request: Request, db: AsyncSession = Depends(ge
             text("SELECT * FROM get_user_2fa_methods_by_email_hash(:email_hash)"),
             {"email_hash": email_hash},
         )
-        methods_rows = result.fetchall()
+        methods_rows = await result.fetchall()
         methods = [row.authentication_method for row in methods_rows]
         preferred_method = next(
             (row.authentication_method for row in methods_rows if row.is_preferred),
@@ -257,7 +259,6 @@ async def login(data: UserLogin, request: Request, db: AsyncSession = Depends(ge
 
     user_info = await get_user_info(db, email_hash)
 
-    # After user_info = await get_user_info(db, email_hash)
     session_token = secrets.token_urlsafe(32)
     refresh_token = secrets.token_urlsafe(32)
 
@@ -265,14 +266,14 @@ async def login(data: UserLogin, request: Request, db: AsyncSession = Depends(ge
         db,
         user_info.user_id,
         session_token,
-        json.dumps(device_info),
+        device_info,
         ip_address,
     )
     await save_refresh_token(
         db,
         user_info.user_id,
         refresh_token,
-        json.dumps(device_info),
+        device_info,
         ip_address,
     )
 
@@ -317,19 +318,22 @@ async def login_otp(data: UserLogin2FA, db: AsyncSession = Depends(get_db)):
 
     user_info = await get_user_info(db, email_hash)
 
-    session_token = await save_session_token(
+    session_token = secrets.token_urlsafe(32)
+    refresh_token = secrets.token_urlsafe(32)
+    await save_session_token(
         db,
-        user_info.id,
+        user_info.user_id,
+        session_token,
         data.device_info,
         data.ip_address,
     )
-    refresh_token = await save_refresh_token(
+    await save_refresh_token(
         db,
-        user_info.id,
+        user_info.user_id,
+        refresh_token,
         data.device_info,
         data.ip_address,
     )
-
     return {
         **dict(user_info._mapping),
         "session_token": session_token,

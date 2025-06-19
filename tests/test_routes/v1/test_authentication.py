@@ -69,6 +69,46 @@ def mock_db_and_override(client):
     return mock_db
 
 
+@pytest.fixture
+def login_payload():
+    """Returns a function to generate login payloads."""
+
+    def _payload(
+        email="testuser",
+        password="password123",
+        ip_address="127.0.0.1",
+        device_info="test-device",
+    ):
+        return {
+            "email": email,
+            "password": password,
+            "ip_address": ip_address,
+            "device_info": device_info,
+        }
+
+    return _payload
+
+
+@pytest.fixture
+def otp_payload():
+    """Returns a function to generate OTP login payloads."""
+
+    def _payload(
+        token="validtoken",
+        otp_code=123456,
+        ip_address="127.0.0.1",
+        device_info="test-device",
+    ):
+        return {
+            "token": token,
+            "otp_code": otp_code,
+            "ip_address": ip_address,
+            "device_info": device_info,
+        }
+
+    return _payload
+
+
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "username, password",
@@ -81,7 +121,12 @@ def mock_db_and_override(client):
     ],
 )
 async def test_login_returns_session_tokens(
-    client, mock_db_and_override, patch_auth_dependencies, username, password
+    client,
+    mock_db_and_override,
+    patch_auth_dependencies,
+    username,
+    password,
+    login_payload,
 ):
     """
     Test successful login returns opaque session and refresh tokens when 2FA is not required.
@@ -91,9 +136,7 @@ async def test_login_returns_session_tokens(
         _mapping={"username": "testuser", "user_id": 42}
     )
 
-    response = client.post(
-        "/v1/auth/login", json={"email": username, "password": password}
-    )
+    response = client.post("/v1/auth/login", json=login_payload())
     assert response.status_code == 200
     data = response.json()
     # Expect opaque tokens in response
@@ -105,7 +148,7 @@ async def test_login_returns_session_tokens(
 
 @pytest.mark.asyncio
 async def test_login_2fa_required_returns_2fa_token(
-    client, mock_db_and_override, patch_auth_dependencies
+    client, mock_db_and_override, patch_auth_dependencies, login_payload
 ):
     """
     Test login returns a 2FA-required response with a temporary token if 2FA is enabled.
@@ -132,9 +175,8 @@ async def test_login_2fa_required_returns_2fa_token(
         mock_execute.fetchall.return_value = mock_methods
         mock_db.execute.return_value = mock_execute
 
-        response = client.post(
-            "/v1/auth/login", json={"email": "user2fa", "password": "pw2fa"}
-        )
+        response = client.post("/v1/auth/login", json=login_payload())
+
     assert response.status_code == 200
     data = response.json()
     assert data["2fa_required"] is True
@@ -145,7 +187,7 @@ async def test_login_2fa_required_returns_2fa_token(
 
 @pytest.mark.asyncio
 async def test_login_invalid_credentials(
-    client, mock_db_and_override, patch_auth_dependencies
+    client, mock_db_and_override, patch_auth_dependencies, login_payload
 ):
     """
     Test login with invalid credentials returns 401 and no tokens.
@@ -153,8 +195,10 @@ async def test_login_invalid_credentials(
     patch_auth_dependencies["verify_pw"].return_value = False
 
     response = client.post(
-        "/v1/auth/login", json={"email": "invaliduser", "password": "wrongpass"}
+        "/v1/auth/login",
+        json=login_payload(email="invaliduser", password="wrongpassword"),
     )
+
     assert response.status_code == 401
     data = response.json()
     assert data["detail"] == "Invalid credentials"
@@ -175,7 +219,7 @@ async def test_login_missing_fields(
 
 @pytest.mark.asyncio
 async def test_login_otp_success_returns_tokens(
-    client, mock_db_and_override, patch_auth_dependencies
+    client, mock_db_and_override, patch_auth_dependencies, otp_payload
 ):
     """
     Test /login/otp returns session and refresh tokens on successful OTP verification.
@@ -200,10 +244,8 @@ async def test_login_otp_success_returns_tokens(
                 }
             },
         ):
-            response = client.post(
-                "/v1/auth/login/otp",
-                json={"token": "validtoken", "otp_code": "123456"},
-            )
+            response = client.post("/v1/auth/login/otp", json=otp_payload())
+
     assert response.status_code == 200
     data = response.json()
     assert "session_token" in data
@@ -214,16 +256,16 @@ async def test_login_otp_success_returns_tokens(
 
 @pytest.mark.asyncio
 async def test_login_otp_invalid_token(
-    client, mock_db_and_override, patch_auth_dependencies
+    client, mock_db_and_override, patch_auth_dependencies, otp_payload
 ):
     """
     Test /login/otp with an invalid or expired token returns 401.
     """
     with patch.object(auth_module, "_2fa_sessions", {}):
         response = client.post(
-            "/v1/auth/login/otp",
-            json={"token": "invalidtoken", "otp_code": "123456"},
+            "/v1/auth/login/otp", json=otp_payload(token="invalidtoken")
         )
+
     assert response.status_code == 401
     data = response.json()
     assert "2FA session token" in data["detail"]
@@ -231,7 +273,7 @@ async def test_login_otp_invalid_token(
 
 @pytest.mark.asyncio
 async def test_login_otp_invalid_otp(
-    client, mock_db_and_override, patch_auth_dependencies
+    client, mock_db_and_override, patch_auth_dependencies, otp_payload
 ):
     """
     Test /login/otp with an invalid OTP code returns 401.
@@ -251,10 +293,8 @@ async def test_login_otp_invalid_otp(
                 }
             },
         ):
-            response = client.post(
-                "/v1/auth/login/otp",
-                json={"token": "validtoken", "otp_code": "badotp"},
-            )
+            response = client.post("/v1/auth/login/otp", json=otp_payload())
+
     assert response.status_code == 401
     data = response.json()
     assert "Invalid 2FA code" in data["detail"]
