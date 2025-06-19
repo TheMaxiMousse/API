@@ -98,6 +98,7 @@ async def save_session_token(
     session_token: str,
     device_info: str,
     ip_address: str,
+    user_agent: str,
 ):
     """
     Save a session token for a user with device and IP info.
@@ -116,7 +117,8 @@ async def save_session_token(
                 :p_user_id,
                 :p_session_token,
                 :p_device_info,
-                :p_ip_address
+                :p_ip_address,
+                :p_user_agent
             )
             """
         ),
@@ -125,6 +127,7 @@ async def save_session_token(
             "p_session_token": session_token,
             "p_device_info": device_info,
             "p_ip_address": ip_address,
+            "p_user_agent": user_agent,
         },
     )
     await db.commit()
@@ -136,6 +139,7 @@ async def save_refresh_token(
     session_token: str,
     device_info: str,
     ip_address: str,
+    user_agent: str,
 ):
     """
     Save a session token for a user with device and IP info.
@@ -154,7 +158,8 @@ async def save_refresh_token(
                 :p_user_id,
                 :p_session_token,
                 :p_device_info,
-                :p_ip_address
+                :p_ip_address,
+                :p_user_agent
             )
             """
         ),
@@ -163,6 +168,7 @@ async def save_refresh_token(
             "p_session_token": session_token,
             "p_device_info": device_info,
             "p_ip_address": ip_address,
+            "p_user_agent": user_agent,
         },
     )
     await db.commit()
@@ -194,29 +200,36 @@ def get_device_info_and_ip(request: Request):
         }
     )
     ip_address = request.headers.get("X-Real-IP") or request.client.host
-    return device_info, ip_address
+    return device_info, ip_address, user_agent_str
+
+
+def filter_user_fields(user_dict, fields):
+    return {k: user_dict[k] for k in fields if k in user_dict}
 
 
 async def create_and_return_session(db, user_info, device_info, ip_address):
-    """Create session and refresh tokens, save them, and return user info with tokens."""
+    """Create session and refresh tokens, save them, and return selected user info with tokens."""
     session_token = secrets.token_urlsafe(32)
     refresh_token = secrets.token_urlsafe(32)
+
     await save_session_token(
-        db,
-        user_info.user_id,
-        session_token,
-        device_info,
-        ip_address,
+        db, user_info.user_id, session_token, device_info, ip_address
     )
     await save_refresh_token(
-        db,
-        user_info.user_id,
-        refresh_token,
-        device_info,
-        ip_address,
+        db, user_info.user_id, refresh_token, device_info, ip_address
     )
+
+    user_dict = dict(user_info._mapping)
+    selected_fields = [
+        "username",
+        "discriminator",
+        "language_id",
+        "display_role",
+        "created_at",
+    ]
+
     return {
-        **dict(user_info._mapping),
+        **filter_user_fields(user_dict, selected_fields),
         "session_token": session_token,
         "refresh_token": refresh_token,
     }
@@ -244,7 +257,7 @@ async def login(data: UserLogin, request: Request, db: AsyncSession = Depends(ge
     password = data.password
 
     # Parse user agent for device info
-    device_info, ip_address = get_device_info_and_ip(request)
+    device_info, ip_address, user_agent_str = get_device_info_and_ip(request)
 
     # Verify password
     password_hash = await get_password_hash_by_email_hash(db, email_hash)
@@ -294,6 +307,7 @@ async def login(data: UserLogin, request: Request, db: AsyncSession = Depends(ge
         session_token,
         device_info,
         ip_address,
+        user_agent_str,
     )
     await save_refresh_token(
         db,
@@ -301,6 +315,7 @@ async def login(data: UserLogin, request: Request, db: AsyncSession = Depends(ge
         refresh_token,
         device_info,
         ip_address,
+        user_agent_str,
     )
 
     return {
