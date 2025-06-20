@@ -373,6 +373,7 @@ async def login_otp(
         session_token,
         device_info,
         ip_address,
+        user_agent_str,
     )
     await save_refresh_token(
         db,
@@ -380,6 +381,7 @@ async def login_otp(
         refresh_token,
         device_info,
         ip_address,
+        user_agent_str,
     )
     return {
         **dict(user_info._mapping),
