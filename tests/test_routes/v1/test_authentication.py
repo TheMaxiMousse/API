@@ -119,7 +119,7 @@ async def test_login_returns_session_tokens(
     """
     # Patch user info to include user_id for token generation simulation
     patch_auth_dependencies["get_user_info"].return_value = AsyncMock(
-        _mapping={"username": "testuser", "user_id": 42}
+        _mapping={"username": "testuser"}
     )
 
     response = client.post("/v1/auth/login", json=login_payload())
@@ -129,7 +129,6 @@ async def test_login_returns_session_tokens(
     assert "session_token" in data
     assert "refresh_token" in data
     assert data["username"] == "testuser"
-    assert data["user_id"] == 42
 
 
 @pytest.mark.asyncio
@@ -215,7 +214,7 @@ async def test_login_otp_success_returns_tokens(
     with patch(f"{AUTH_PATH}.verify_otp") as verify_otp_mock:
         verify_otp_mock.return_value = True
         patch_auth_dependencies["get_user_info"].return_value = AsyncMock(
-            _mapping={"username": "testuser", "user_id": 42}
+            _mapping={"username": "testuser"}
         )
         # Simulate valid token in _2fa_sessions
         with patch.object(
@@ -235,7 +234,6 @@ async def test_login_otp_success_returns_tokens(
     assert "session_token" in data
     assert "refresh_token" in data
     assert data["username"] == "testuser"
-    assert data["user_id"] == 42
 
 
 @pytest.mark.asyncio

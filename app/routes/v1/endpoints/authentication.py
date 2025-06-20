@@ -196,16 +196,18 @@ def filter_user_fields(user_dict, fields):
     return {k: user_dict[k] for k in fields if k in user_dict}
 
 
-async def create_and_return_session(db, user_info, device_info, ip_address):
+async def create_and_return_session(
+    db, user_info, device_info, ip_address, user_agent_str
+):
     """Create session and refresh tokens, save them, and return selected user info with tokens."""
     session_token = secrets.token_urlsafe(32)
     refresh_token = secrets.token_urlsafe(32)
 
     await save_session_token(
-        db, user_info.user_id, session_token, device_info, ip_address
+        db, user_info.user_id, session_token, device_info, ip_address, user_agent_str
     )
     await save_refresh_token(
-        db, user_info.user_id, refresh_token, device_info, ip_address
+        db, user_info.user_id, refresh_token, device_info, ip_address, user_agent_str
     )
 
     user_dict = dict(user_info._mapping)
@@ -286,32 +288,9 @@ async def login(data: UserLogin, request: Request, db: AsyncSession = Depends(ge
             }
 
     user_info = await get_user_info(db, email_hash)
-
-    session_token = secrets.token_urlsafe(32)
-    refresh_token = secrets.token_urlsafe(32)
-
-    await save_session_token(
-        db,
-        user_info.user_id,
-        session_token,
-        device_info,
-        ip_address,
-        user_agent_str,
+    return await create_and_return_session(
+        db, user_info, device_info, ip_address, user_agent_str
     )
-    await save_refresh_token(
-        db,
-        user_info.user_id,
-        refresh_token,
-        device_info,
-        ip_address,
-        user_agent_str,
-    )
-
-    return {
-        **dict(user_info._mapping),
-        "session_token": session_token,
-        "refresh_token": refresh_token,
-    }
 
 
 @router.post("/login/otp")
@@ -330,30 +309,14 @@ async def login_otp(
     Raises:
         HTTPException: If the session token is invalid/expired, 2FA is not enabled, or OTP is invalid.
     """
-    user_agent_str = request.headers.get("User-Agent", "")
-    ua = parse_user_agent(user_agent_str)
-    device_info = json.dumps(
-        {
-            "family": ua.device.family,
-            "brand": ua.device.brand,
-            "model": ua.device.model,
-            "is_mobile": ua.is_mobile,
-            "is_tablet": ua.is_tablet,
-            "is_pc": ua.is_pc,
-            "is_bot": ua.is_bot,
-        }
-    )
-    ip_address = request.headers.get("X-Real-IP") or request.client.host
+    device_info, ip_address, user_agent_str = get_device_info_and_ip(request)
 
-    # Validate the temporary session token
     session = _2fa_sessions.get(data.token)
-
     if not session or session["expires_at"] < time.time():
         raise HTTPException(401, "Invalid or expired 2FA session token")
 
     email_hash = session["email_hash"]
 
-    # Get 2FA secret and method
     row = await get_2fa_secret(db, email_hash)
     secret = row.authentication_secret if row else None
 
@@ -364,30 +327,9 @@ async def login_otp(
         raise HTTPException(401, "Invalid 2FA code")
 
     user_info = await get_user_info(db, email_hash)
-
-    session_token = secrets.token_urlsafe(32)
-    refresh_token = secrets.token_urlsafe(32)
-    await save_session_token(
-        db,
-        user_info.user_id,
-        session_token,
-        device_info,
-        ip_address,
-        user_agent_str,
+    return await create_and_return_session(
+        db, user_info, device_info, ip_address, user_agent_str
     )
-    await save_refresh_token(
-        db,
-        user_info.user_id,
-        refresh_token,
-        device_info,
-        ip_address,
-        user_agent_str,
-    )
-    return {
-        **dict(user_info._mapping),
-        "session_token": session_token,
-        "refresh_token": refresh_token,
-    }
 
 
 @router.post("/register")
