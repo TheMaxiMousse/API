@@ -147,8 +147,8 @@ async def test_login_2fa_required_returns_2fa_token(
 
     # Simulate available 2FA methods
     with (
-        patch(f"{AUTH_PATH}.text") as text_mock,
-        patch(f"{AUTH_PATH}.time") as time_mock,
+        patch(f"{AUTH_PATH}.text"),
+        patch(f"{AUTH_PATH}.time"),
     ):
         # Patch DB call for 2FA methods
         mock_methods = [
