@@ -1,6 +1,6 @@
 {
-    "name": "ChocoMax API Development Container",
-    "dockerFile": "Dockerfile",
+    "name": "ChocoMax API",
+    "image": "ghcr.io/themaximousse/api-devcontainer:latest",
     "customizations": {
         "settings": {
             "terminal.integrated.shell.linux": "/bin/bash"
