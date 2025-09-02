@@ -1,19 +1,44 @@
-"""
-This is the main entry point for the API application.
-It sets up the FastAPI application, includes the home router, and mounts versioned APIs.
-"""
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
-from app.routes.home import router as home_router
-from app.routes.v1 import api as v1
-from app.routes.v2 import api as v2
+from .api.v1.router import api_router as api_v1_router
+from .core.config import settings
 
-app = FastAPI(title="ChocoMax Shop API")
 
-# Home - non-versioned because it is the main entry point
-app.include_router(home_router)
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    print("Starting up Maxi'Mousse...")
+    yield
+    print("Shutting down Maxi'Mousse...")
 
-# API versions to make sure applications using the API won't break when the API changes
-app.mount("/api/v1", v1)
-app.mount("/api/v2", v2)
+
+# Create FastAPI app with modern lifespan handler
+app = FastAPI(
+    title=settings.PROJECT_NAME,
+    version="1.0.0",
+    description="E-commerce API for Maxi'Mousse products with multilingual support",
+    lifespan=lifespan,
+)
+
+# Configure CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "http://localhost:5173"],  # Frontend URLs
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH"],
+    allow_headers=["*"],
+)
+
+# Include API routers
+app.include_router(
+    api_v1_router,
+    prefix=settings.API_V1_STR,
+)
+
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint"""
+    return {"status": "healthy", "version": "1.0.0"}
