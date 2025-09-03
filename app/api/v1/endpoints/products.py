@@ -32,30 +32,22 @@ async def get_products(
         SortOrder, Query(description="Sort direction")
     ] = SortOrder.DESC,
 ) -> ProductListResponse:
-    """
-    Get a paginated list of products.
+    import traceback
 
-    This endpoint is optimized for homepage and category listing views.
-    It returns essential product information along with category details,
-    variant indicators, and related data counts.
-
-    **Query Parameters:**
-    - `page`: Page number (starting from 1)
-    - `size`: Number of items per page (1-100)
-    - `lang`: Language code for translations (en, fr, es)
-    - `category_id`: Filter products by category
-    - `tag_ids`: Filter products by multiple tag IDs
-    - `sort_by`: Sort field (created_at, price, name)
-    - `sort_order`: Sort direction (ASC, DESC)
-
-    **Response includes:**
-    - Product list with category information
-    - Pagination metadata
-    - Variant and customization indicators
-    - Related data counts (attributes, tags, images)
-    """
     try:
+        print("=== PRODUCTS ENDPOINT DEBUG ===")
+        print(f"Database session: {db}")
+        print(f"Pagination: {pagination}")
+        print(f"Language: {language}")
+        print(f"Category ID: {category_id}")
+        print(f"Tag IDs: {tag_ids}")
+        print(f"Sort by: {sort_by}")
+        print(f"Sort order: {sort_order}")
+
         page, size = pagination
+        print(f"Extracted page: {page}, size: {size}")
+
+        print("About to call ProductService.get_products_list...")
 
         result = await ProductService.get_products_list(
             db=db,
@@ -68,11 +60,19 @@ async def get_products(
             tag_ids=tag_ids,
         )
 
+        print(f"ProductService returned: {type(result)}")
+        print("=== PRODUCTS ENDPOINT SUCCESS ===")
         return result
 
     except Exception as e:
-        # Log the error in production
+        print(f"=== PRODUCTS ENDPOINT ERROR ===")
+        print(f"Error: {e}")
+        print(f"Error type: {type(e)}")
+        print(f"Full traceback:\n{traceback.format_exc()}")
+        print("=== END ERROR ===")
+
+        # Re-raise with original error for debugging
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to retrieve products. Please try again.",
+            detail=f"Debug: {str(e)}",
         ) from e

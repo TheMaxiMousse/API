@@ -25,13 +25,13 @@
         "black"
     ],
     "triggerTaskOnSave.tasks": {
-        "Run file tests": [
-            "tests/**/test_*.py"
-        ],
-        "Run all tests": [
-            "app/**/*.py",
-            "!tests/**"
-        ]
+        // "Run file tests": [
+        //     "tests/**/test_*.py"
+        // ],
+        // "Run all tests": [
+        //     "app/**/*.py",
+        //     "!tests/**"
+        // ]
     },
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true

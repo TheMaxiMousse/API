@@ -1,5 +1,3 @@
-from typing import Any
-
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -120,12 +118,12 @@ async def get_products_paginated_db(
 
     # Convert PostgreSQL pagination_info to Pydantic model
     pagination = PaginationInfo(
-        current_page=pagination_data.current_page,
-        page_size=pagination_data.page_size,
-        total_items=pagination_data.total_items,
-        total_pages=pagination_data.total_pages,
-        has_next=pagination_data.has_next,
-        has_previous=pagination_data.has_previous,
+        current_page=getattr(pagination_data, "current_page", page),
+        page_size=getattr(pagination_data, "page_size", size),
+        total_items=getattr(pagination_data, "total_items", 0),
+        total_pages=getattr(pagination_data, "total_pages", 0),
+        has_next=getattr(pagination_data, "has_next", False),
+        has_previous=getattr(pagination_data, "has_previous", False),
     )
 
     return ProductListResponse(products=products, pagination=pagination)
