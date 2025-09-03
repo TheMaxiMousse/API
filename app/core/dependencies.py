@@ -23,7 +23,7 @@ PaginationDep = Annotated[tuple[int, int], Depends(get_pagination_params)]
 # Language dependency for i18n
 def get_language(
     lang: Annotated[
-        str, Query(regex=r"^[a-z]{2}$", description="Language ISO code")
+        str, Query(pattern=r"^[a-z]{2}$", description="Language ISO code")
     ] = "en",
 ) -> str:
     return lang
