@@ -9,7 +9,7 @@ description = "ChocoMax API"
 readme = "README.md"
 license = "MIT"
 authors = [{ name = "Vianpyro" }]
-requires-python = ">=3.12.10"
+requires-python = ">=3.12.11"
 dependencies = []  # This will be populated dynamically below
 urls = { Homepage = "https://github.com/TheChocoMax/API" }
 classifiers = [
