@@ -1,7 +1,6 @@
 from typing import Annotated, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import APIRouter, HTTPException, Query, status
 
 from ....api.schemas.v1.product import ProductListResponse, ProductSortBy, SortOrder
 from ....api.services.product_service import ProductService
