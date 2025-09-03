@@ -12,6 +12,9 @@ class Settings(BaseSettings):
         "case_sensitive": True,
         "extra": "ignore",
         "validate_assignment": True,
+        "env_map": {
+            "DEBUG": "DEBUG",
+        },
     }
 
     # API Configuration
@@ -25,7 +28,7 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = Field(
         default="development", description="Application environment"
     )
-    DEBUG: bool = Field(default=False, env="DEBUG")
+    DEBUG: bool = Field(default=False, description="Enable debug mode")
 
     # Database
     DB_HOST: str = Field(default="localhost", description="Database host")
